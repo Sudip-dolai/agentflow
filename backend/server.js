@@ -1,7 +1,8 @@
 // ============================================
 // AGENTFLOW — Main Server
 // ============================================
-
+console.log('[PATH DEBUG] __dirname:', __dirname);
+console.log('[PATH DEBUG] process.cwd():', process.cwd());
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
