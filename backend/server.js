@@ -38,10 +38,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // ---- SERVE FRONTEND ----
-app.use(express.static(path.join(__dirname, '../frontend')));
-app.use(express.static(path.join(__dirname, 'frontend')));
-app.use(express.static(path.join(process.cwd(), 'frontend')));
-app.use(express.static(path.join(process.cwd(), '../frontend')));
+app.use(express.static(path.resolve(__dirname, '..', 'frontend')));
 // ---- API ROUTES ----
 // Auth and payments are always open
 app.use('/api/auth',     require('./routes/auth'));
@@ -82,12 +79,12 @@ app.get('/api/health', (req, res) => {
 
 // ---- AGENT PROFILE SHORTLINKS ----
 app.get('/agent/:username', (req, res) => {
- res.sendFile(path.join(process.cwd(), 'frontend/pages/profile.html'));
+res.sendFile(path.resolve(__dirname, '..', 'frontend', 'pages', 'profile.html'));
 });
 
 // ---- CATCH ALL → SERVE FRONTEND ----
 app.get('*', (req, res) => {
-  res.sendFile(path.join(process.cwd(), 'frontend/index.html'));
+res.sendFile(path.resolve(__dirname, '..', 'frontend', 'index.html'));
 });
 
 // ---- ERROR HANDLER ----
