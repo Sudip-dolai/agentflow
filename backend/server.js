@@ -37,8 +37,10 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // ---- SERVE FRONTEND ----
+app.use(express.static(path.join(__dirname, '../frontend')));
+app.use(express.static(path.join(__dirname, 'frontend')));
 app.use(express.static(path.join(process.cwd(), 'frontend')));
-
+app.use(express.static(path.join(process.cwd(), '../frontend')));
 // ---- API ROUTES ----
 // Auth and payments are always open
 app.use('/api/auth',     require('./routes/auth'));
