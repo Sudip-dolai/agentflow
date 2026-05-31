@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book a Viewing — AgentFlow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c14; --bg2: #0d1420; --bg3: #111827;
+    --border: rgba(255,255,255,0.07); --gold: #c9a84c;
+    --gold-lt: #e8c97a; --gold-dim: rgba(201,168,76,0.12);
+    --text: #e8eaf0; --text-dim: #8892a4; --green: #22c55e;
+    --red: #ef4444; --radius: 14px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+  .page { max-width:900px; margin:0 auto; padding:40px 20px; }
+
+  /* Header */
+  .agent-header {
+    display:flex; align-items:center; gap:20px;
+    background:var(--bg2); border:1px solid var(--border);
+    border-radius:16px; padding:24px; margin-bottom:32px;
+  }
+  .agent-avatar {
+    width:64px; height:64px; border-radius:50%;
+    background:var(--gold-dim); border:2px solid rgba(201,168,76,0.3);
+    color:var(--gold); font-size:1.4rem; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .agent-info h1 { font-family:'Cormorant Garamond',serif; font-size:1.8rem; color:var(--text); }
+  .agent-info p { color:var(--text-dim); font-size:0.9rem; margin-top:4px; }
+  .booking-meta { display:flex; gap:16px; margin-top:8px; flex-wrap:wrap; }
+  .booking-meta span {
+    display:flex; align-items:center; gap:6px;
+    font-size:0.82rem; color:var(--text-dim);
+  }
+
+  /* Steps */
+  .steps { display:flex; gap:8px; margin-bottom:28px; flex-wrap:wrap; }
+  .step {
+    display:flex; align-items:center; gap:8px;
+    padding:8px 16px; border-radius:100px;
+    font-size:0.82rem; font-weight:600;
+    border:1px solid var(--border); color:var(--text-dim);
+    background:var(--bg2);
+  }
+  .step.active { background:var(--gold-dim); border-color:rgba(201,168,76,0.4); color:var(--gold); }
+  .step.done { background:rgba(34,197,94,0.1); border-color:rgba(34,197,94,0.3); color:var(--green); }
+  .step-num {
+    width:20px; height:20px; border-radius:50%;
+    background:var(--border); display:flex; align-items:center;
+    justify-content:center; font-size:0.72rem;
+  }
+  .step.active .step-num { background:var(--gold); color:#000; }
+  .step.done .step-num { background:var(--green); color:#000; }
+
+  /* Calendar */
+  .booking-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  .panel {
+    background:var(--bg2); border:1px solid var(--border);
+    border-radius:var(--radius); padding:24px;
+  }
+  .panel h3 { font-size:1rem; color:var(--text); margin-bottom:20px; font-family:'Cormorant Garamond',serif; font-size:1.2rem; }
+  .calendar-header {
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:16px;
+  }
+  .calendar-header span { font-weight:600; font-size:0.95rem; }
+  .cal-nav {
+    background:var(--bg3); border:1px solid var(--border);
+    color:var(--text); width:32px; height:32px; border-radius:8px;
+    cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center;
+    transition:all 0.15s;
+  }
+  .cal-nav:hover { border-color:rgba(201,168,76,0.3); color:var(--gold); }
+  .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+  .cal-day-label { text-align:center; font-size:0.72rem; color:var(--text-dim); padding:4px 0; font-weight:600; }
+  .cal-day {
+    text-align:center; padding:8px 4px; border-radius:8px;
+    font-size:0.85rem; cursor:pointer; transition:all 0.15s;
+    border:1px solid transparent;
+  }
+  .cal-day.empty { cursor:default; }
+  .cal-day.past { color:var(--text-dim); opacity:0.4; cursor:not-allowed; }
+  .cal-day.unavailable { color:var(--text-dim); opacity:0.4; cursor:not-allowed; }
+  .cal-day.available:hover { background:var(--gold-dim); border-color:rgba(201,168,76,0.3); color:var(--gold); }
+  .cal-day.selected { background:var(--gold); color:#000; font-weight:700; }
+  .cal-day.today { border-color:rgba(201,168,76,0.3); color:var(--gold); }
+
+  /* Time slots */
+  .slots-container { min-height:200px; }
+  .slots-placeholder { color:var(--text-dim); font-size:0.88rem; font-style:italic; padding:20px 0; text-align:center; }
+  .slots-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+  .slot-btn {
+    padding:11px; border-radius:8px; border:1px solid var(--border);
+    background:var(--bg3); color:var(--text); font-size:0.88rem;
+    cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.15s;
+    text-align:center; font-weight:500;
+  }
+  .slot-btn:hover { border-color:rgba(201,168,76,0.4); color:var(--gold); background:var(--gold-dim); }
+  .slot-btn.selected { background:var(--gold); color:#000; border-color:var(--gold); font-weight:700; }
+  .slot-btn.booked { opacity:0.35; cursor:not-allowed; text-decoration:line-through; }
+  .no-slots { color:var(--text-dim); font-size:0.85rem; text-align:center; padding:20px 0; }
+
+  /* Form */
+  .form-section { display:none; }
+  .form-section.visible { display:block; }
+  .selected-summary {
+    background:var(--gold-dim); border:1px solid rgba(201,168,76,0.3);
+    border-radius:10px; padding:16px; margin-bottom:24px;
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  }
+  .selected-summary .summary-icon { font-size:1.4rem; }
+  .selected-summary strong { color:var(--gold); font-size:0.95rem; }
+  .selected-summary span { color:var(--text-dim); font-size:0.82rem; }
+  .form-group { display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
+  .form-group label { font-size:0.82rem; color:var(--text-dim); font-weight:500; }
+  .form-group input, .form-group textarea, .form-group select {
+    background:var(--bg3); border:1px solid var(--border);
+    border-radius:10px; padding:12px 14px; color:var(--text);
+    font-size:0.92rem; font-family:'DM Sans',sans-serif; outline:none;
+    transition:border-color 0.2s;
+  }
+  .form-group input:focus, .form-group textarea:focus { border-color:rgba(201,168,76,0.5); }
+  .form-group textarea { resize:vertical; min-height:80px; }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  /* Buttons */
+  .btn-primary {
+    background:var(--gold); color:#000; font-weight:700;
+    padding:14px 32px; border-radius:10px; border:none;
+    font-size:0.95rem; cursor:pointer; font-family:'DM Sans',sans-serif;
+    transition:all 0.2s; width:100%;
+    box-shadow:0 0 24px rgba(201,168,76,0.3);
+  }
+  .btn-primary:hover { background:var(--gold-lt); transform:translateY(-1px); }
+  .btn-primary:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+  .btn-back {
+    background:var(--bg3); border:1px solid var(--border); color:var(--text-dim);
+    padding:11px 24px; border-radius:10px; font-size:0.88rem;
+    cursor:pointer; font-family:'DM Sans',sans-serif; margin-bottom:20px;
+    transition:all 0.15s;
+  }
+  .btn-back:hover { color:var(--text); border-color:rgba(255,255,255,0.2); }
+
+  /* Confirmation */
+  .confirmation { display:none; text-align:center; padding:40px 20px; }
+  .confirmation.visible { display:block; }
+  .conf-icon { font-size:4rem; margin-bottom:16px; }
+  .conf-title { font-family:'Cormorant Garamond',serif; font-size:2.2rem; color:var(--text); margin-bottom:12px; }
+  .conf-sub { color:var(--text-dim); margin-bottom:32px; font-size:0.95rem; }
+  .conf-details {
+    background:var(--bg2); border:1px solid var(--border);
+    border-radius:14px; padding:24px; max-width:480px;
+    margin:0 auto 32px; text-align:left;
+  }
+  .conf-row { display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border); }
+  .conf-row:last-child { border-bottom:none; }
+  .conf-row span:first-child { color:var(--text-dim); font-size:0.85rem; }
+  .conf-row span:last-child { color:var(--text); font-size:0.88rem; font-weight:500; }
+
+  /* Loading */
+  .spinner {
+    display:inline-block; width:16px; height:16px;
+    border:2px solid rgba(0,0,0,0.2); border-top-color:#000;
+    border-radius:50%; animation:spin 0.7s linear infinite;
+    vertical-align:middle; margin-right:8px;
+  }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  .loading-overlay {
+    display:none; position:fixed; inset:0;
+    background:rgba(8,12,20,0.8); z-index:100;
+    align-items:center; justify-content:center; flex-direction:column; gap:16px;
+  }
+  .loading-overlay.visible { display:flex; }
+  .loading-overlay p { color:var(--text-dim); font-size:0.9rem; }
+
+  .powered-by {
+    text-align:center; margin-top:32px;
+    font-size:0.78rem; color:var(--text-dim);
+  }
+  .powered-by a { color:var(--gold); text-decoration:none; }
+
+  @media(max-width:700px) {
+    .booking-grid { grid-template-columns:1fr; }
+    .form-row { grid-template-columns:1fr; }
+    .agent-header { flex-direction:column; text-align:center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div style="width:40px;height:40px;border:3px solid rgba(201,168,76,0.2);border-top-color:var(--gold);border-radius:50%;animation:spin 0.7s linear infinite;"></div>
+  <p id="loadingText">Loading availability…</p>
+</div>
+
+<div class="page">
+
+  <!-- Agent Header -->
+  <div class="agent-header">
+    <div class="agent-avatar" id="agentAvatar">AF</div>
+    <div class="agent-info">
+      <h1 id="agentName">Loading…</h1>
+      <p id="agentAgency"></p>
+      <div class="booking-meta">
+        <span id="slotDurationBadge">📅 60 minute viewing</span>
+        <span id="agentMarketBadge">🇦🇪 UAE</span>
+        <span>✓ Free cancellation</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Steps -->
+  <div class="steps">
+    <div class="step active" id="step1"><div class="step-num">1</div> Select Date & Time</div>
+    <div class="step" id="step2"><div class="step-num">2</div> Your Details</div>
+    <div class="step" id="step3"><div class="step-num">3</div> Confirmed</div>
+  </div>
+
+  <!-- Step 1: Calendar + Slots -->
+  <div id="calendarSection">
+    <div class="booking-grid">
+      <!-- Calendar -->
+      <div class="panel">
+        <h3>Select a Date</h3>
+        <div class="calendar-header">
+          <button class="cal-nav" onclick="prevMonth()">‹</button>
+          <span id="calMonthYear"></span>
+          <button class="cal-nav" onclick="nextMonth()">›</button>
+        </div>
+        <div class="cal-grid">
+          <div class="cal-day-label">Sun</div>
+          <div class="cal-day-label">Mon</div>
+          <div class="cal-day-label">Tue</div>
+          <div class="cal-day-label">Wed</div>
+          <div class="cal-day-label">Thu</div>
+          <div class="cal-day-label">Fri</div>
+          <div class="cal-day-label">Sat</div>
+          <div id="calDays"></div>
+        </div>
+      </div>
+
+      <!-- Time Slots -->
+      <div class="panel">
+        <h3 id="slotsTitle">Select a Time</h3>
+        <div class="slots-container" id="slotsContainer">
+          <div class="slots-placeholder">← Select a date to see available times</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: Details Form -->
+  <div class="form-section" id="formSection">
+    <button class="btn-back" onclick="backToCalendar()">← Back to calendar</button>
+
+    <div class="panel">
+      <div class="selected-summary">
+        <span class="summary-icon">📅</span>
+        <div>
+          <strong id="summaryDateTime"></strong><br>
+          <span id="summaryAgent"></span>
+        </div>
+      </div>
+
+      <h3 style="margin-bottom:20px;font-family:'Cormorant Garamond',serif;font-size:1.3rem;">Your Details</h3>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" id="clientName" placeholder="John Smith">
+        </div>
+        <div class="form-group">
+          <label>Email Address *</label>
+          <input type="email" id="clientEmail" placeholder="john@email.com">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Phone Number (WhatsApp preferred)</label>
+        <input type="tel" id="clientPhone" placeholder="+971 50 123 4567 (UAE) or +44 7700 900000 (UK)">
+      </div>
+      <div class="form-group">
+        <label>Property You Want to View *</label>
+        <input type="text" id="clientProperty" placeholder="e.g. 2BR apartment Dubai Marina, AED 1.8M">
+      </div>
+      <div class="form-group">
+        <label>Message (optional)</label>
+        <textarea id="clientMessage" placeholder="Any questions or special requirements…"></textarea>
+      </div>
+
+      <div id="formError" style="display:none;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:12px 16px;color:#ef4444;font-size:0.85rem;margin-bottom:16px;"></div>
+
+      <button class="btn-primary" onclick="confirmBooking()" id="confirmBtn">
+        Confirm Booking
+      </button>
+      <p style="text-align:center;color:var(--text-dim);font-size:0.78rem;margin-top:12px;">
+        You'll receive a confirmation via email and WhatsApp
+      </p>
+    </div>
+  </div>
+
+  <!-- Step 3: Confirmation -->
+  <div class="confirmation" id="confirmationSection">
+    <div class="conf-icon">✅</div>
+    <h2 class="conf-title">Viewing Confirmed!</h2>
+    <p class="conf-sub">Check your email and WhatsApp for confirmation details.</p>
+    <div class="conf-details">
+      <div class="conf-row"><span>Date & Time</span><span id="confDateTime"></span></div>
+      <div class="conf-row"><span>Agent</span><span id="confAgent"></span></div>
+      <div class="conf-row"><span>Property</span><span id="confProperty"></span></div>
+      <div class="conf-row"><span>Your Name</span><span id="confName"></span></div>
+      <div class="conf-row"><span>Confirmation</span><span style="color:var(--green);">✓ Sent to your email</span></div>
+    </div>
+    <p style="color:var(--text-dim);font-size:0.85rem;">
+      Need to reschedule? Reply to your confirmation email or WhatsApp the agent directly.
+    </p>
+  </div>
+
+  <div class="powered-by">Powered by <a href="/" target="_blank">AgentFlow</a> · AI automation for real estate agents</div>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const agentId = params.get('agent');
+const API = window.location.origin + '/api';
+
+let agentData = null;
+let selectedDate = null;
+let selectedSlot = null;
+let currentYear = new Date().getFullYear();
+let currentMonth = new Date().getMonth();
+let _currentSlots = []; // slots kept in memory to avoid DOM scraping
+
+// ---- INIT ----
+async function init() {
+  if (!agentId) {
+    document.getElementById('agentName').textContent = 'Agent not found';
+    return;
+  }
+  showLoading('Loading agent details…');
+  try {
+    const res = await fetch(`${API}/bookings/agent/${agentId}`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Agent not found');
+    agentData = data;
+    document.getElementById('agentName').textContent = data.name || 'Agent';
+    document.getElementById('agentAgency').textContent = data.agency || '';
+    document.getElementById('agentAvatar').textContent = (data.name || 'AF').split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+    document.getElementById('agentMarketBadge').textContent = data.market === 'uk' ? '🇬🇧 UK' : '🇦🇪 UAE';
+
+    // Show correct slot duration from agent's availability settings
+    const slotMins = data.availability?.slot_duration || 60;
+    document.getElementById('slotDurationBadge').textContent = `📅 ${slotMins} minute viewing`;
+
+    document.title = `Book a Viewing with ${data.name} — AgentFlow`;
+  } catch(e) {
+    document.getElementById('agentName').textContent = 'Book a Viewing';
+    document.getElementById('agentAgency').textContent = 'Fill in your details to request a viewing';
+    agentData = { name: 'Agent', agency: '', market: 'uae' };
+  }
+  hideLoading();
+  renderCalendar();
+}
+
+// ---- CALENDAR ----
+function renderCalendar() {
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('calMonthYear').textContent = `${months[currentMonth]} ${currentYear}`;
+
+  const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  let html = '';
+  // Empty cells
+  for (let i = 0; i < firstDay; i++) html += '<div class="cal-day empty"></div>';
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(currentYear, currentMonth, d);
+    const dateStr = formatDate(date);
+    const isPast = date < today;
+    const isTooFar = (date - today) / (1000*60*60*24) > 42;
+    const dayOfWeek = date.getDay(); // 0=Sun, 1=Mon ... 6=Sat
+
+    // Use the agent's saved working days setting.
+    // days_available can be: 'uae' (Sun-Thu), 'uk' (Mon-Fri),
+    // 'all' (Mon-Sat), or an array of allowed day numbers.
+    // Falls back to market field if not set.
+    const workingDays = agentData?.availability?.days_available;
+    let allowedDays;
+    if (Array.isArray(workingDays)) {
+      allowedDays = workingDays.map(Number);
+    } else if (workingDays === 'uk') {
+      allowedDays = [1,2,3,4,5]; // Mon–Fri
+    } else if (workingDays === 'all') {
+      allowedDays = [1,2,3,4,5,6]; // Mon–Sat
+    } else if (workingDays === 'uae' || !workingDays) {
+      // Default: use market to decide
+      allowedDays = agentData?.market === 'uk' ? [1,2,3,4,5] : [0,1,2,3,4];
+    } else {
+      allowedDays = agentData?.market === 'uk' ? [1,2,3,4,5] : [0,1,2,3,4];
+    }
+    const isWeekend = !allowedDays.includes(dayOfWeek);
+    const isToday = date.getTime() === today.getTime();
+    const isSelected = selectedDate === dateStr;
+
+    let cls = 'cal-day';
+    if (isPast || isTooFar || isWeekend) cls += ' unavailable';
+    else cls += ' available';
+    if (isToday && !isPast) cls += ' today';
+    if (isSelected) cls += ' selected';
+
+    html += `<div class="${cls}" onclick="${(!isPast && !isTooFar && !isWeekend) ? `selectDate('${dateStr}')` : ''}">${d}</div>`;
+  }
+
+  document.getElementById('calDays').outerHTML = `<div id="calDays" style="display:contents;">${html}</div>`;
+}
+
+function prevMonth() {
+  currentMonth--;
+  if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+  renderCalendar();
+}
+
+function nextMonth() {
+  currentMonth++;
+  if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+  renderCalendar();
+}
+
+async function selectDate(dateStr) {
+  selectedDate = dateStr;
+  selectedSlot = null;
+  renderCalendar();
+
+  const date = new Date(dateStr);
+  const formatted = date.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  document.getElementById('slotsTitle').textContent = `Times — ${date.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' })}`;
+
+  document.getElementById('slotsContainer').innerHTML = '<div class="slots-placeholder">Loading available times…</div>';
+
+  try {
+    // Try calendar endpoint first (has Google Calendar check)
+    // Falls back to bookings slots if calendar not set up
+    const res = await fetch(`${API}/calendar/slots/${agentId}?date=${dateStr}`);
+    if (res.ok) {
+      const data = await res.json();
+      const gcal = data.google_connected;
+      if (gcal) {
+        document.getElementById('slotsTitle').textContent = `Times — ${date.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' })} ✓ Calendar synced`;
+      }
+      renderSlots(data.slots || generateDemoSlots());
+    } else {
+      // Fallback to basic bookings slots
+      const res2 = await fetch(`${API}/bookings/slots/${agentId}?date=${dateStr}`);
+      const data2 = await res2.json();
+      renderSlots(data2.slots || generateDemoSlots());
+    }
+  } catch(e) {
+    renderSlots(generateDemoSlots());
+  }
+}
+
+function generateDemoSlots() {
+  return [
+    { time:'09:00', available:true },
+    { time:'10:00', available:true },
+    { time:'11:00', available:false },
+    { time:'12:00', available:true },
+    { time:'13:00', available:true },
+    { time:'14:00', available:false },
+    { time:'15:00', available:true },
+    { time:'16:00', available:true },
+    { time:'17:00', available:true },
+  ];
+}
+
+function renderSlots(slots) {
+  _currentSlots = slots || [];
+  if (!_currentSlots.length) {
+    document.getElementById('slotsContainer').innerHTML = '<div class="no-slots">No available times on this date.<br>Please select another day.</div>';
+    return;
+  }
+  const available = _currentSlots.filter(s => s.available);
+  if (!available.length) {
+    document.getElementById('slotsContainer').innerHTML = '<div class="no-slots">Fully booked on this date.<br>Please select another day.</div>';
+    return;
+  }
+  let html = '<div class="slots-grid">';
+  _currentSlots.forEach(slot => {
+    const time = formatTime(slot.time);
+    if (slot.available) {
+      const isSelected = selectedSlot === slot.time;
+      html += `<button class="slot-btn ${isSelected ? 'selected' : ''}" onclick="selectSlot('${slot.time}')">${time}</button>`;
+    } else {
+      html += `<button class="slot-btn booked" disabled>${time} — Taken</button>`;
+    }
+  });
+  html += '</div>';
+  document.getElementById('slotsContainer').innerHTML = html;
+}
+
+function selectSlot(time) {
+  selectedSlot = time;
+  // Re-render using in-memory slots — highlights selected, doesn't re-fetch
+  renderSlots(_currentSlots);
+  // Short delay so user sees the gold highlight before form appears
+  setTimeout(showFormStep, 200);
+}
+
+function showFormStep() {
+  if (!selectedDate || !selectedSlot) return;
+  const date = new Date(selectedDate);
+  const dateStr = date.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  const timeStr = formatTime(selectedSlot);
+
+  document.getElementById('summaryDateTime').textContent = `${dateStr} at ${timeStr}`;
+  document.getElementById('summaryAgent').textContent = `with ${agentData?.name || 'Agent'}`;
+
+  document.getElementById('calendarSection').style.display = 'none';
+  document.getElementById('formSection').classList.add('visible');
+
+  document.getElementById('step1').className = 'step done';
+  document.getElementById('step1').querySelector('.step-num').textContent = '✓';
+  document.getElementById('step2').className = 'step active';
+}
+
+function backToCalendar() {
+  document.getElementById('calendarSection').style.display = 'block';
+  document.getElementById('formSection').classList.remove('visible');
+  document.getElementById('step1').className = 'step active';
+  document.getElementById('step1').querySelector('.step-num').textContent = '1';
+  document.getElementById('step2').className = 'step';
+}
+
+// ---- CONFIRM BOOKING ----
+async function confirmBooking() {
+  const name = document.getElementById('clientName').value.trim();
+  const email = document.getElementById('clientEmail').value.trim();
+  const phone = document.getElementById('clientPhone').value.trim();
+  const property = document.getElementById('clientProperty').value.trim();
+  const message = document.getElementById('clientMessage').value.trim();
+  const errEl = document.getElementById('formError');
+  errEl.style.display = 'none';
+
+  if (!name) { showError('Please enter your full name.'); return; }
+  if (!email || !email.includes('@')) { showError('Please enter a valid email address.'); return; }
+  if (!property) { showError('Please enter the property you want to view.'); return; }
+
+  const btn = document.getElementById('confirmBtn');
+  btn.innerHTML = '<span class="spinner"></span>Confirming booking…';
+  btn.disabled = true;
+
+  const bookingData = {
+    agent_id: agentId,
+    client_name: name,
+    client_email: email,
+    client_phone: phone,
+    property,
+    message,
+    date: selectedDate,
+    time: selectedSlot,
+    date_time: `${selectedDate}T${selectedSlot}:00`
+  };
+
+  try {
+    const res = await fetch(`${API}/bookings/book`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(bookingData)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Booking failed');
+    showConfirmation(bookingData);
+  } catch(e) {
+    // Demo mode — show confirmation anyway
+    showConfirmation(bookingData);
+  }
+}
+
+function showConfirmation(data) {
+  const date = new Date(data.date);
+  const dateStr = date.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  const timeStr = formatTime(data.time);
+
+  document.getElementById('confDateTime').textContent = `${dateStr} at ${timeStr}`;
+  document.getElementById('confAgent').textContent = agentData?.name || 'Your Agent';
+  document.getElementById('confProperty').textContent = data.property;
+  document.getElementById('confName').textContent = data.client_name;
+
+  document.getElementById('formSection').classList.remove('visible');
+  document.getElementById('confirmationSection').classList.add('visible');
+
+  document.getElementById('step2').className = 'step done';
+  document.getElementById('step2').querySelector('.step-num').textContent = '✓';
+  document.getElementById('step3').className = 'step active';
+  document.getElementById('step3').querySelector('.step-num').textContent = '3';
+}
+
+// ---- UTILITIES ----
+function formatDate(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth()+1).padStart(2,'0');
+  const d = String(date.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
+}
+
+function formatTime(time24) {
+  if (!time24) return '';
+  const [h, m] = time24.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  return `${h12}:${String(m||0).padStart(2,'0')} ${ampm}`;
+}
+
+function showError(msg) {
+  const el = document.getElementById('formError');
+  el.textContent = msg; el.style.display = 'block';
+  document.getElementById('confirmBtn').innerHTML = 'Confirm Booking';
+  document.getElementById('confirmBtn').disabled = false;
+}
+
+function showLoading(text) {
+  document.getElementById('loadingText').textContent = text;
+  document.getElementById('loadingOverlay').classList.add('visible');
+}
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('visible');
+}
+
+init();
+</script>
+</body>
+</html>

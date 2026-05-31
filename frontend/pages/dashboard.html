@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — AgentFlow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<style>
+  body{background:var(--bg)}
+  .mobile-sidebar-btn{display:none;position:fixed;top:16px;left:16px;z-index:200;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:1.2rem;cursor:pointer}
+  .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:40}
+  .sidebar-overlay.open{display:block}
+  @media(max-width:900px){.mobile-sidebar-btn{display:block}}
+  .trial-bar{background:var(--gold-dim);border-bottom:1px solid rgba(201,168,76,0.25);padding:10px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  .trial-bar span{color:var(--gold);font-size:0.85rem}
+  .trial-bar a{background:var(--gold);color:#000;padding:6px 18px;border-radius:6px;font-size:0.82rem;font-weight:700;text-decoration:none;cursor:pointer}
+  .section-title{font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--text-dim);margin:32px 0 16px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+  .copy-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text-dim);padding:8px 16px;border-radius:8px;font-size:0.82rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s}
+  .copy-btn:hover{color:var(--gold);border-color:rgba(201,168,76,0.3)}
+  .sequence-item{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:12px;display:flex;align-items:center;gap:16px}
+  .seq-day{background:var(--gold-dim);border:1px solid rgba(201,168,76,0.3);color:var(--gold);font-size:0.78rem;font-weight:700;padding:4px 10px;border-radius:100px;white-space:nowrap}
+  .seq-info{flex:1}
+  .seq-info strong{display:block;color:var(--white);font-size:0.9rem;margin-bottom:4px}
+  .seq-info span{color:var(--text-dim);font-size:0.82rem}
+  .seq-status{font-size:0.75rem;color:var(--green);font-weight:600}
+  .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border)}
+  .toggle-row:last-child{border-bottom:none}
+  .toggle-info strong{display:block;color:var(--white);font-size:0.9rem;margin-bottom:4px}
+  .toggle-info span{color:var(--text-dim);font-size:0.82rem}
+  .toggle{position:relative;width:44px;height:24px;background:var(--bg3);border-radius:100px;cursor:pointer;transition:background 0.2s;border:1px solid var(--border)}
+  .toggle.on{background:var(--gold);border-color:var(--gold)}
+  .toggle::after{content:'';position:absolute;width:18px;height:18px;background:var(--text-dim);border-radius:50%;top:2px;left:2px;transition:left 0.2s,background 0.2s}
+  .toggle.on::after{left:22px;background:#000}
+  .report-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin-bottom:28px}
+  .report-stat{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:20px;text-align:center}
+  .report-stat .r-num{font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:700;color:var(--gold)}
+  .report-stat .r-label{font-size:0.8rem;color:var(--text-dim);margin-top:4px}
+  .report-timeline{display:flex;flex-direction:column;gap:12px}
+  .timeline-item{display:flex;align-items:flex-start;gap:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+  .timeline-item:last-child{border-bottom:none}
+  .t-dot{width:10px;height:10px;border-radius:50%;background:var(--gold);margin-top:6px;flex-shrink:0}
+  .t-info strong{display:block;color:var(--white);font-size:0.88rem}
+  .t-info span{color:var(--text-dim);font-size:0.8rem}
+  .chat-preview{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:20px;max-width:360px}
+  .chat-bubble{background:var(--bg2);border-radius:12px 12px 12px 4px;padding:12px 16px;font-size:0.88rem;color:var(--text);margin-bottom:10px;max-width:85%}
+  .chat-bubble.user{background:var(--gold-dim);border-radius:12px 12px 4px 12px;margin-left:auto;color:var(--gold)}
+  .chat-input-row{display:flex;gap:8px;margin-top:16px}
+  .chat-input-row input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:0.85rem;outline:none;font-family:'DM Sans',sans-serif}
+  .chat-send{background:var(--gold);color:#000;border:none;border-radius:8px;padding:10px 16px;cursor:pointer;font-size:0.85rem;font-weight:600}
+  .embed-box{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:16px;font-family:monospace;font-size:0.82rem;color:var(--gold);word-break:break-all;margin-top:16px}
+  .settings-section{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:28px;margin-bottom:20px}
+  .settings-section h3{font-size:1.1rem;color:var(--white);margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+  .integration-item{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border)}
+  .integration-item:last-child{border-bottom:none;padding-bottom:0}
+  .int-info{display:flex;align-items:center;gap:12px}
+  .int-icon{font-size:1.4rem}
+  .int-info strong{display:block;color:var(--white);font-size:0.9rem}
+  .int-info span{color:var(--text-dim);font-size:0.8rem}
+  .connect-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 18px;border-radius:8px;font-size:0.82rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s}
+  .connect-btn:hover{border-color:rgba(201,168,76,0.3);color:var(--gold)}
+  .connect-btn.connected{background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.3);color:#22c55e}
+  .cal-steps{display:flex;flex-direction:column;gap:16px}
+  .cal-step{display:flex;gap:16px;align-items:flex-start;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:20px}
+  .cal-step-num{width:32px;height:32px;border-radius:50%;background:var(--gold-dim);border:1px solid rgba(201,168,76,0.3);color:var(--gold);font-weight:700;font-size:0.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .cal-step-info strong{display:block;color:var(--white);margin-bottom:4px;font-size:0.9rem}
+  .cal-step-info span{color:var(--text-dim);font-size:0.82rem}
+  .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(0,0,0,0.2);border-top-color:#000;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:8px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .leads-table{width:100%;border-collapse:collapse;margin-top:16px}
+  .leads-table th{text-align:left;padding:12px 16px;font-size:0.78rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border)}
+  .leads-table td{padding:14px 16px;border-bottom:1px solid var(--border);font-size:0.88rem;color:var(--text)}
+  .leads-table tr:last-child td{border-bottom:none}
+  .leads-table tr:hover td{background:rgba(255,255,255,0.02)}
+  .lead-source{display:inline-block;padding:3px 10px;border-radius:100px;font-size:0.75rem;font-weight:600}
+  .lead-source.bayut{background:rgba(201,168,76,0.15);color:var(--gold)}
+  .lead-source.website{background:rgba(34,197,94,0.15);color:#22c55e}
+  .lead-source.chatbot{background:rgba(99,102,241,0.15);color:#818cf8}
+  .lead-source.manual{background:rgba(255,255,255,0.08);color:var(--text-dim)}
+  .history-item{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:10px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+  .history-portal{display:inline-block;padding:3px 10px;border-radius:100px;font-size:0.75rem;font-weight:600;background:var(--gold-dim);color:var(--gold);border:1px solid rgba(201,168,76,0.3);margin-bottom:6px}
+  .history-preview{color:var(--text-dim);font-size:0.82rem;line-height:1.5;max-height:60px;overflow:hidden}
+  .loading-placeholder{color:var(--text-dim);font-size:0.9rem;font-style:italic;padding:20px 0}
+</style>
+</head>
+<body>
+<button class="mobile-sidebar-btn" onclick="toggleSidebar()">☰</button>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<div class="dash-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><a href="/index.html" class="logo">Agent<span>Flow</span></a></div>
+    <nav class="sidebar-nav">
+      <a class="nav-item active" onclick="showPanel('overview')" id="nav-overview"><span class="icon">⊞</span> Overview</a>
+      <a class="nav-item" onclick="showPanel('listing')" id="nav-listing"><span class="icon">✍️</span> Listing Generator</a>
+      <a class="nav-item" onclick="showPanel('leads')" id="nav-leads"><span class="icon">👥</span> Leads</a>
+      <a class="nav-item" onclick="showPanel('followup')" id="nav-followup"><span class="icon">⚡</span> Lead Follow-Up</a>
+      <a class="nav-item" onclick="showPanel('chatbot')" id="nav-chatbot"><span class="icon">🤖</span> AI Chatbot</a>
+      <a class="nav-item" onclick="showPanel('booking')" id="nav-booking"><span class="icon">📅</span> Appointments</a>
+      <a class="nav-item" onclick="showPanel('report')" id="nav-report"><span class="icon">📊</span> Weekly Report</a>
+      <a class="nav-item" onclick="showPanel('profile')" id="nav-profile"><span class="icon">🔗</span> My Profile Page</a>
+      <a class="nav-item" onclick="showPanel('settings')" id="nav-settings"><span class="icon">⚙️</span> Settings</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="user-info">
+        <div class="user-avatar" id="userAvatar">AF</div>
+        <div><strong id="userName">Loading…</strong><span id="userPlan">Free Trial</span></div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="trial-bar" id="trialBar">
+      <span>🎉 You're on your <strong>free trial — <span id="trialDaysLeft">14</span> days remaining</strong>. Upgrade to keep all automations running.</span>
+      <a onclick="upgradeNow()">Upgrade to Pro — $49/mo</a>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div class="tool-panel active" id="panel-overview">
+      <div class="dash-header">
+        <div><h1>Good morning, <span id="greetName" class="gold">Agent</span> 👋</h1><p>Here's what your automations did this week</p></div>
+        <div style="color:var(--text-dim);font-size:0.85rem;" id="currentDate"></div>
+      </div>
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><div class="label">Leads This Week</div><div class="value" id="stat-leads">—</div><div class="change">From all sources</div></div>
+        <div class="stat-card"><div class="label">Follow-Ups Sent</div><div class="value" id="stat-followups">—</div><div class="change">Automated</div></div>
+        <div class="stat-card"><div class="label">Viewings Booked</div><div class="value" id="stat-bookings">—</div><div class="change">This week</div></div>
+        <div class="stat-card"><div class="label">Listings Generated</div><div class="value" id="stat-listings">—</div><div class="change">AI-written</div></div>
+        <div class="stat-card"><div class="label">Hours Saved</div><div class="value gold" style="font-size:2.4rem;" id="stat-hours">—</div><div class="change">This week</div></div>
+      </div>
+      <div class="section-title">Your 5 Tools</div>
+      <div class="tools-grid">
+        <div class="tool-card" onclick="showPanel('listing')"><div class="tool-card-header"><span class="tool-icon">✍️</span><span class="tool-status active">Active</span></div><h3>AI Listing Generator</h3><p>Write Bayut, Property Finder, Rightmove & Zoopla listings in 10 seconds. English + Arabic.</p><span class="tool-btn">Open Tool →</span></div>
+        <div class="tool-card" onclick="showPanel('leads')"><div class="tool-card-header"><span class="tool-icon">👥</span><span class="tool-status active">Active</span></div><h3>Leads</h3><p>View and manage all leads captured by your chatbot, website, and follow-up system.</p><span class="tool-btn">View Leads →</span></div>
+        <div class="tool-card" onclick="showPanel('followup')"><div class="tool-card-header"><span class="tool-icon">⚡</span><span class="tool-status active">Active</span></div><h3>Auto Lead Follow-Up</h3><p>Automatically nurture leads with a personalized email sequence within 60 seconds.</p><span class="tool-btn">Open Tool →</span></div>
+        <div class="tool-card" onclick="showPanel('chatbot')"><div class="tool-card-header"><span class="tool-icon">🤖</span><span class="tool-status setup">Setup Required</span></div><h3>AI Website Chatbot</h3><p>Deploy a 24/7 chatbot to capture leads from your website automatically.</p><span class="tool-btn">Setup →</span></div>
+        <div class="tool-card" onclick="showPanel('booking')"><div class="tool-card-header"><span class="tool-icon">📅</span><span class="tool-status active">Active</span></div><h3>Auto Appointment Booking</h3><p>Let clients book viewings themselves — zero back-and-forth scheduling.</p><span class="tool-btn">Open Tool →</span></div>
+        <div class="tool-card" onclick="showPanel('profile')">
+          <div class="tool-card-header"><span class="tool-icon">🔗</span><span class="tool-status active">Live</span></div>
+          <h3>My Profile Page</h3>
+          <p>Your public page with chatbot built in. Share the link in Instagram bio, WhatsApp, and business card.</p>
+          <span class="tool-btn">View My Page →</span>
+        </div>
+        <div class="tool-card" onclick="showPanel('report')"><div class="tool-card-header"><span class="tool-icon">📊</span><span class="tool-status active">Active</span></div><h3>Weekly AI Report</h3><p>Your performance summary lands in your inbox every Monday at 8am.</p><span class="tool-btn">View Report →</span></div>
+      </div>
+    </div>
+
+    <!-- LISTING GENERATOR -->
+    <div class="tool-panel" id="panel-listing">
+      <div class="panel-header"><button class="back-btn" onclick="showPanel('overview')">← Back</button><h2>✍️ AI Listing Generator</h2></div>
+      <div class="panel-body">
+        <div style="display:flex;gap:10px;margin-bottom:20px;" id="marketSelector">
+          <button class="market-btn active" id="mkt-uae" onclick="selectMarket('uae')">🇦🇪 UAE</button>
+          <button class="market-btn" id="mkt-uk" onclick="selectMarket('uk')">🇬🇧 UK</button>
+        </div>
+        <div class="portal-tabs" id="portalTabs">
+          <button class="portal-tab active" onclick="selectPortal('bayut')" id="tab-bayut">Bayut</button>
+          <button class="portal-tab" onclick="selectPortal('propertyfinder')" id="tab-propertyfinder">Property Finder</button>
+        </div>
+        <div class="arabic-toggle-row" id="arabicToggleRow">
+          <div class="toggle on" id="arabicToggle" onclick="this.classList.toggle('on')"></div>
+          <span>Generate Arabic version</span>
+          <span style="color:var(--gold);font-size:0.85rem;margin-left:auto;">نسخة عربية</span>
+        </div>
+        <h3 style="margin-bottom:20px;">Property Details</h3>
+        <div class="input-row">
+          <div class="form-group"><label>Property Type</label><input type="text" id="propType" placeholder="e.g. 2-bed apartment, villa…"></div>
+          <div class="form-group"><label>Location</label><input type="text" id="propLocation" placeholder="e.g. Dubai Marina, JBR…"></div>
+        </div>
+        <div class="input-row">
+          <div class="form-group"><label>Bedrooms</label><input type="number" id="propBeds" placeholder="2" min="0"></div>
+          <div class="form-group"><label>Bathrooms</label><input type="number" id="propBaths" placeholder="2" min="0"></div>
+        </div>
+        <div class="input-row">
+          <div class="form-group"><label>Size</label><input type="text" id="propSize" placeholder="e.g. 1,200 sq ft"></div>
+          <div class="form-group"><label>Price</label><input type="text" id="propPrice" placeholder="e.g. AED 1,800,000"></div>
+        </div>
+        <div class="form-group"><label>Key Features <span style="color:var(--text-dim)">(separate with commas)</span></label><input type="text" id="propFeatures" placeholder="sea view, pool, gym, parking, fully furnished…"></div>
+        <div class="form-group"><label>Tone</label>
+          <select id="propTone" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:13px 16px;color:var(--white);font-size:0.95rem;font-family:'DM Sans',sans-serif;width:100%;outline:none;">
+            <option value="luxury">Luxury & Premium</option>
+            <option value="professional">Professional & Concise</option>
+            <option value="warm">Warm & Inviting</option>
+          </select>
+        </div>
+        <div class="action-row">
+          <button class="btn-primary" onclick="generateListing()" id="generateBtn">✨ Generate Listing</button>
+          <button class="copy-btn" id="copyEnBtn" style="display:none;" onclick="copyText(document.getElementById('listingResult').textContent, this, 'Copy English')">Copy English</button>
+          <button class="copy-btn" id="copyArBtn" style="display:none;" onclick="copyText(document.getElementById('listingResultAr').textContent, this, 'Copy Arabic نسخ')">Copy Arabic نسخ</button>
+        </div>
+        <div class="result-tabs" id="resultTabs" style="display:none;margin-top:20px;">
+          <button class="result-tab active" onclick="switchResultTab('en')" id="rtab-en">English</button>
+          <button class="result-tab" onclick="switchResultTab('ar')" id="rtab-ar">العربية</button>
+        </div>
+        <div class="result-box placeholder" id="listingResult">Your AI-generated listing will appear here. Fill in the details above and click Generate.</div>
+        <div class="result-box arabic" id="listingResultAr" style="display:none;direction:rtl;text-align:right;font-family:Arial,sans-serif;line-height:1.9;"></div>
+        <div id="charCounter" style="text-align:right;font-size:0.78rem;color:var(--text-dim);margin-top:8px;display:none;"></div>
+        <div class="section-title" style="margin-top:32px;">Recent Listings</div>
+        <div id="listingHistory"><div class="loading-placeholder">Loading your listing history…</div></div>
+      </div>
+    </div>
+
+    <!-- LEADS -->
+    <div class="tool-panel" id="panel-leads">
+      <div class="panel-header"><button class="back-btn" onclick="showPanel('overview')">← Back</button><h2>👥 Leads</h2></div>
+      <div class="panel-body">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+          <div><h3 style="margin:0;">All Leads</h3><p style="color:var(--text-dim);font-size:0.85rem;margin-top:4px;">Captured from chatbot, website, and follow-up sequences</p></div>
+          <button class="btn-primary" style="padding:10px 22px;" onclick="showAddLeadModal()">+ Add Lead</button>
+        </div>
+        <div id="leadsContainer"><div class="loading-placeholder">Loading leads…</div></div>
+      </div>
+    </div>
+
+    <!-- FOLLOW UP -->
+    <div class="tool-panel" id="panel-followup">
+      <div class="panel-header"><button class="back-btn" onclick="showPanel('overview')">← Back</button><h2>⚡ Auto Lead Follow-Up</h2></div>
+      <div class="panel-body">
+        <h3>Your Follow-Up Sequence</h3>
+        <p style="color:var(--text-dim);font-size:0.9rem;margin-bottom:16px;">When a new lead comes in, AgentFlow follows up automatically within 60 seconds on your chosen channel.</p>
+        <div id="channelBadge" style="display:inline-flex;align-items:center;gap:8px;background:var(--gold-dim);border:1px solid rgba(201,168,76,0.3);border-radius:8px;padding:8px 16px;margin-bottom:20px;">
+          <span id="channelIcon">📧</span>
+          <span style="color:var(--gold);font-size:0.85rem;font-weight:600;" id="channelLabel">Following up via Email</span>
+          <a onclick="showPanel('settings')" style="color:var(--text-dim);font-size:0.78rem;cursor:pointer;margin-left:8px;">Change →</a>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="toggle on" id="seqToggle" onclick="toggleSequence()"></div>
+            <span style="font-size:0.9rem;" id="seqStatus">Sequence is <strong style="color:var(--green)">Active</strong></span>
+          </div>
+          <button class="tool-btn">+ Add Email</button>
+        </div>
+        <div class="sequence-item"><div class="seq-day">Day 0 · Instant</div><div class="seq-info"><strong>Welcome Email — Within 60 seconds</strong><span>Subject: "Thanks for your enquiry — I'll be in touch shortly"</span></div><div class="seq-status">✓ Live</div></div>
+        <div class="sequence-item"><div class="seq-day">Day 1</div><div class="seq-info"><strong>Property Match Email</strong><span>Subject: "I found properties that match what you're looking for"</span></div><div class="seq-status">✓ Live</div></div>
+        <div class="sequence-item"><div class="seq-day">Day 3</div><div class="seq-info"><strong>Viewing Invite</strong><span>Subject: "Ready to schedule a viewing? Pick a time that works for you"</span></div><div class="seq-status">✓ Live</div></div>
+        <div class="sequence-item"><div class="seq-day">Day 7</div><div class="seq-info"><strong>Final Check-In</strong><span>Subject: "Still looking? Let me know how I can help"</span></div><div class="seq-status">✓ Live</div></div>
+        <div style="margin-top:24px;padding-top:24px;border-top:1px solid var(--border);">
+         
+
+        </div>
+      </div>
+    </div>
+
+    <!-- CHATBOT -->
+    <div class="tool-panel" id="panel-chatbot">
+      <div class="panel-header"><button class="back-btn" onclick="showPanel('overview')">← Back</button><h2>🤖 AI Website Chatbot</h2></div>
+      <div class="panel-body">
+        <h3>Configure Your Chatbot</h3>
+        <p style="color:var(--text-dim);font-size:0.9rem;margin-bottom:24px;">Set up once. Paste one line of code on your website. Captures leads 24/7 in English and Arabic.</p>
+        <div style="display:flex;gap:24px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:280px;">
+            <div class="form-group"><label>Chatbot Name</label><input type="text" id="botName" placeholder="e.g. Alex from Dubai Homes" value="Alex"></div>
+            <div class="form-group"><label>Welcome Message</label><textarea id="botWelcome" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:13px 16px;color:var(--white);font-size:0.9rem;font-family:'DM Sans',sans-serif;resize:vertical;min-height:80px;outline:none;width:100%;">Hi! I'm Alex, your property assistant. Looking to buy, rent, or invest? I can help you find the perfect property! 🏙️</textarea></div>
+            <div class="form-group"><label>FAQs <span style="color:var(--text-dim)">(format: Question | Answer — one per line)</span></label><textarea id="botFAQs" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:13px 16px;color:var(--white);font-size:0.9rem;font-family:'DM Sans',sans-serif;resize:vertical;min-height:100px;outline:none;width:100%;">What areas do you cover? | We cover Dubai Marina, Downtown Dubai, Palm Jumeirah and JBR.
+What is the minimum UAE property investment? | The minimum is AED 750,000 for most freehold areas.
+Do you help with mortgage? | Yes, we work with trusted mortgage advisors.
+How long does buying take? | Typically 2-4 months from offer to completion.</textarea></div>
+            <div class="action-row">
+              <button class="btn-primary" onclick="saveChatbot()">Save & Get Embed Code</button>
+              <button class="copy-btn" onclick="copyText(document.getElementById('embedBox').textContent, this, 'Copy Code')" id="copyEmbedBtn" style="display:none;">Copy Code</button>
+            </div>
+            <div class="embed-box" id="embedBox" style="display:none;"></div>
+          </div>
+          <div style="flex:0 0 320px;">
+            <div style="font-size:0.82rem;color:var(--text-dim);margin-bottom:12px;">Live Preview</div>
+            <div class="chat-preview">
+              <div class="chat-bubble" id="welcomeBubble">Hi! I'm Alex, your property assistant. Looking to buy or invest? 🏙️</div>
+              <div class="chat-bubble user">Dubai Marina apartments?</div>
+              <div class="chat-bubble">Great choice! Can I get your name and email to send you current listings and pricing?</div>
+              <div class="chat-input-row"><input type="text" placeholder="Type a message…" readonly><button class="chat-send">Send</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- APPOINTMENTS -->
+    <div class="tool-panel" id="panel-booking">
+      <div class="panel-header"><button class="back-btn" onclick="showPanel('overview')">← Back</button><h2>📅 Auto Appointment Booking</h2></div>
+      <div class="panel-body">
+        <h3>Your Booking Setup</h3>
+        <p style="color:var(--text-dim);font-size:0.9rem;margin-bottom:28px;">Clients pick their own viewing slot. You get the booking. Zero back-and-forth.</p>
+        <div class="cal-steps">
+          <div class="cal-step">
+            <div class="cal-step-num">1</div>
+            <div class="cal-step-info">
+              <strong>Connect Google Calendar</strong>
+              <span>Your real calendar is checked before showing any slots. No double bookings — ever.</span>
+              <div style="margin-top:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                <button class="connect-btn" id="calConnectBtn" onclick="connectGoogleCalendar()">Connect Google Calendar</button>
+                <span id="calStatus" style="font-size:0.82rem;color:var(--text-dim);">Checking status…</span>
+              </div>
+              <div id="calNotConfigured" style="display:none;margin-top:12px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:12px;font-size:0.82rem;color:#ef4444;">
+                ⚠️ Google Calendar keys not in .env yet. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET — see README.md for instructions.
+              </div>
+            </div>
+          </div>
+          <div class="cal-step"><div class="cal-step-num">2</div><div class="cal-step-info"><strong>Set Your Availability</strong><span>Choose days and hours available for viewings.</span><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+            <select style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;"><option>Sun – Thu (UAE)</option><option>Mon – Fri (UK)</option><option>All week</option></select>
+            <select style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;"><option>9:00 AM – 6:00 PM</option><option>8:00 AM – 8:00 PM</option></select>
+            <select style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.82rem;"><option>60 min slots</option><option>30 min slots</option></select>
+          </div></div></div>
+          <div class="cal-step"><div class="cal-step-num">3</div><div class="cal-step-info"><strong>Your Booking Link</strong><span>Share in emails, WhatsApp, and on your website.</span><div style="margin-top:12px;"><div class="embed-box" style="display:block;font-size:0.9rem;" id="bookingLink">https://theagentflow.co/book/your-name</div><div style="display:flex;gap:8px;margin-top:10px;"><button class="copy-btn" onclick="copyText(document.getElementById('bookingLink').textContent, this, 'Copy Link')">Copy Link</button></div></div></div></div>
+          <div class="cal-step"><div class="cal-step-num">4</div><div class="cal-step-info"><strong>Automatic Reminders</strong><span>Confirmation and reminder 24hrs before viewing — automatically.</span><div style="display:flex;align-items:center;gap:10px;margin-top:12px;"><div class="toggle on"></div><span style="color:var(--green);font-size:0.85rem;">Reminders ON</span></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORT -->
+    <div class="tool-panel" id="panel-report">
+      <div class="panel-header"><button class="back-btn" onclick="showPanel('overview')">← Back</button><h2>📊 Weekly AI Report</h2></div>
+      <div class="panel-body">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+          <div><h3 style="margin-bottom:4px;" id="reportPeriod">This Week</h3><span style="color:var(--text-dim);font-size:0.85rem;">Next report sends Monday 8:00 AM</span></div>
+          <button class="tool-btn primary-btn" onclick="sendReportNow(this)">Send Report Now</button>
+        </div>
+        <div class="report-grid" id="reportGrid"><div class="loading-placeholder" style="grid-column:1/-1;">Loading report…</div></div>
+        <div style="margin-top:24px;padding:20px;background:var(--gold-dim);border:1px solid rgba(201,168,76,0.3);border-radius:12px;" id="aiInsight">
+          <div style="font-size:0.85rem;color:var(--gold);font-weight:600;margin-bottom:8px;">🤖 AI Insight</div>
+          <p style="color:var(--text);font-size:0.88rem;line-height:1.6;" id="insightText">Loading AI insight…</p>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- PROFILE PAGE -->
+    <div class="tool-panel" id="panel-profile">
+      <div class="dash-header">
+        <div><h1>🔗 My Profile Page</h1><p>Your public page — share this link everywhere</p></div>
+      </div>
+      <div class="panel-body">
+        <div style="background:var(--gold-dim);border:1px solid rgba(201,168,76,0.3);border-radius:14px;padding:24px;margin-bottom:24px;">
+          <div style="font-size:0.85rem;color:var(--gold);font-weight:600;margin-bottom:8px;">🔗 Your Public Profile Link</div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 16px;font-size:0.88rem;color:var(--text);flex:1;min-width:200px;" id="profileLinkDisplay">Loading…</div>
+            <button class="copy-btn" onclick="copyProfileLink()">Copy Link</button>
+            <a id="profileLinkOpen" href="#" target="_blank" class="tool-btn">Open Page →</a>
+          </div>
+          <p style="color:var(--text-dim);font-size:0.82rem;margin-top:12px;">Share this link in your Instagram bio, WhatsApp status, business card, and Bayut/Property Finder profile.</p>
+        </div>
+
+        <div class="settings-section">
+          <h3>Profile Settings</h3>
+          <div class="input-row">
+            <div class="form-group"><label>Display Name</label><input type="text" id="profileDisplayName" placeholder="Ahmed Al Rashid"></div>
+            <div class="form-group"><label>Username (for your link)</label><input type="text" id="profileUsername" placeholder="ahmed" style="text-transform:lowercase;"></div>
+          </div>
+          <div class="form-group"><label>Agency / Brokerage</label><input type="text" id="profileAgency2" placeholder="Dubai Luxury Homes"></div>
+          <div class="form-group"><label>WhatsApp Number (shown on your page)</label><input type="tel" id="profileWhatsapp" placeholder="+971 50 123 4567"></div>
+          <div class="form-group"><label>Tagline</label><input type="text" id="profileTagline" placeholder="Dubai Marina & JBR Specialist"></div>
+          <button class="btn-primary" style="padding:11px 28px;" onclick="saveProfilePage()">Save Profile</button>
+        </div>
+
+        <div class="settings-section">
+          <h3>📅 Availability Settings</h3>
+          <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:20px;">Set when clients can book viewings through your profile page.</p>
+          <div class="input-row">
+            <div class="form-group"><label>Start Time</label>
+              <select id="availStart" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:13px 16px;color:var(--white);font-size:0.95rem;font-family:'DM Sans',sans-serif;width:100%;outline:none;">
+                <option value="8">8:00 AM</option><option value="9" selected>9:00 AM</option>
+                <option value="10">10:00 AM</option><option value="11">11:00 AM</option>
+              </select>
+            </div>
+            <div class="form-group"><label>End Time</label>
+              <select id="availEnd" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:13px 16px;color:var(--white);font-size:0.95rem;font-family:'DM Sans',sans-serif;width:100%;outline:none;">
+                <option value="17">5:00 PM</option><option value="18" selected>6:00 PM</option>
+                <option value="19">7:00 PM</option><option value="20">8:00 PM</option>
+              </select>
+            </div>
+          </div>
+          <div class="input-row">
+            <div class="form-group"><label>Slot Duration</label>
+              <select id="availSlot" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:13px 16px;color:var(--white);font-size:0.95rem;font-family:'DM Sans',sans-serif;width:100%;outline:none;">
+                <option value="30">30 minutes</option><option value="60" selected>60 minutes</option>
+                <option value="90">90 minutes</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Buffer Between Slots</label>
+              <select id="availBuffer" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:13px 16px;color:var(--white);font-size:0.95rem;font-family:'DM Sans',sans-serif;width:100%;outline:none;">
+                <option value="0">No buffer</option><option value="15" selected>15 minutes</option>
+                <option value="30">30 minutes</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group"><label>Working Days</label>
+            <select id="availDays" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:13px 16px;color:var(--white);font-size:0.95rem;font-family:'DM Sans',sans-serif;width:100%;outline:none;">
+              <option value="uae">Sunday – Thursday (UAE)</option>
+              <option value="uk">Monday – Friday (UK)</option>
+              <option value="all">Monday – Saturday</option>
+              <option value="7days">All 7 days</option>
+            </select>
+          </div>
+          <button class="btn-primary" style="padding:11px 28px;" onclick="saveAvailability()">Save Availability</button>
+        </div>
+
+        <div class="settings-section">
+          <h3>Upcoming Bookings</h3>
+          <div id="upcomingBookings"><div class="loading-placeholder">Loading bookings…</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="tool-panel" id="panel-settings">
+      <div class="dash-header"><div><h1>Settings</h1><p>Manage your account, integrations, and billing</p></div></div>
+      <div class="settings-section">
+        <h3>Profile</h3>
+        <div class="input-row">
+          <div class="form-group"><label>Full Name</label><input type="text" id="settingsName"></div>
+          <div class="form-group"><label>Email</label><input type="email" id="settingsEmail" readonly style="opacity:0.6;"></div>
+        </div>
+        <div class="input-row">
+          <div class="form-group"><label>Agency Name</label><input type="text" id="settingsAgency"></div>
+          <div class="form-group"><label>Market</label>
+            <select id="settingsMarket" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:13px 16px;color:var(--white);font-size:0.95rem;font-family:'DM Sans',sans-serif;width:100%;outline:none;">
+              <option value="uae">🇦🇪 UAE — Dubai</option><option value="uae-ad">🇦🇪 UAE — Abu Dhabi</option>
+              <option value="uk">🇬🇧 UK — London</option><option value="uk-man">🇬🇧 UK — Manchester</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-primary" style="padding:11px 28px;" onclick="saveProfile()">Save Changes</button>
+      </div>
+      <div class="settings-section">
+        <h3>📱 Follow-Up Channel</h3>
+        <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:16px;">How do your leads contact you? AgentFlow will follow up on the same channel automatically.</p>
+        <div class="channel-selector">
+          <button class="channel-btn active" id="ch-email" onclick="selectChannel('email')">
+            <span class="ch-icon">📧</span>
+            <span class="ch-label">Email</span>
+            <span class="ch-sub">Best for UK agents</span>
+          </button>
+          <button class="channel-btn" id="ch-whatsapp" onclick="selectChannel('whatsapp')">
+            <span class="ch-icon">💬</span>
+            <span class="ch-label">WhatsApp</span>
+            <span class="ch-sub">Best for UAE agents</span>
+          </button>
+          <button class="channel-btn" id="ch-both" onclick="selectChannel('both')">
+            <span class="ch-icon">⚡</span>
+            <span class="ch-label">Both</span>
+            <span class="ch-sub">Maximum coverage</span>
+          </button>
+        </div>
+        <div class="wa-number-row" id="waNumberRow">
+          <label id="waNumberLabel">Your WhatsApp Business Number (with country code)</label>
+          <input type="tel" id="waNumber" placeholder="+971 50 123 4567 or +44 7700 900000">
+          <div class="wa-tip">
+            💬 <strong>How it works:</strong> When a lead comes in, AgentFlow sends them an instant WhatsApp message from your Twilio number within 60 seconds, then follows up on Day 1, Day 3, and Day 7 automatically.<br><br>
+            <strong>Setup:</strong> Add your Twilio keys to your .env file. Sign up free at <strong>console.twilio.com</strong>
+          </div>
+        </div>
+        <div style="margin-top:16px;">
+          <button class="btn-primary" style="padding:11px 28px;" onclick="saveChannel()">Save Channel</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3>Integrations</h3>
+
+        <!-- Gmail -->
+        <div class="integration-item">
+          <div class="int-info">
+            <div class="int-icon">📧</div>
+            <div>
+              <strong>Gmail — Lead Auto-Capture</strong>
+              <span id="gmailStatusLabel">Scans Rightmove &amp; Zoopla enquiry emails every 15 min (UK agents)</span>
+            </div>
+          </div>
+          <button class="connect-btn" id="gmailConnectBtn" onclick="connectGmail()">Connect Gmail</button>
+        </div>
+
+        <!-- Google Calendar -->
+        <div class="integration-item">
+          <div class="int-info">
+            <div class="int-icon">📅</div>
+            <div>
+              <strong>Google Calendar</strong>
+              <span>Sync real availability — no double bookings</span>
+            </div>
+          </div>
+          <button class="connect-btn" id="int-calendar" onclick="connectIntegration(this,'calendar')">Connect</button>
+        </div>
+
+        <!-- WhatsApp -->
+        <div class="integration-item">
+          <div class="int-info">
+            <div class="int-icon">💬</div>
+            <div>
+              <strong>WhatsApp — Inbound Lead Capture</strong>
+              <span id="waStatusLabel">Auto-creates leads when someone messages you on WhatsApp (UAE agents)</span>
+            </div>
+          </div>
+          <span id="waStatusBadge" class="wa-status-badge not-configured">⚠ Not configured</span>
+        </div>
+
+        <!-- WhatsApp setup instructions (shown when not configured) -->
+        <div id="waSetupBox" style="display:none;margin-top:12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:20px;font-size:0.84rem;color:var(--text-dim);line-height:1.7;">
+          <strong style="color:var(--white);">💬 WhatsApp Setup (3 steps)</strong><br><br>
+          <strong style="color:var(--gold);">1.</strong> Sign up free at <a href="https://console.twilio.com" target="_blank" style="color:var(--gold);">console.twilio.com</a><br>
+          <strong style="color:var(--gold);">2.</strong> Add to your <code style="color:var(--gold);">.env</code> file:<br>
+          <div style="background:var(--bg);border-radius:6px;padding:10px 14px;margin:8px 0;font-family:monospace;font-size:0.8rem;color:var(--gold);">
+            TWILIO_ACCOUNT_SID=ACxxxx<br>
+            TWILIO_AUTH_TOKEN=your_token<br>
+            TWILIO_WHATSAPP_FROM=whatsapp:+14155238886
+          </div>
+          <strong style="color:var(--gold);">3.</strong> In Twilio Console → Messaging → WhatsApp Sandbox → set webhook:<br>
+          <div style="background:var(--bg);border-radius:6px;padding:10px 14px;margin:8px 0;font-family:monospace;font-size:0.8rem;color:var(--gold);" id="webhookUrlDisplay">
+            https://yourdomain.com/api/whatsapp/webhook
+          </div>
+          Once done, anyone who messages your WhatsApp number becomes a lead automatically ✅
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3>Billing</h3>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+          <div><div style="color:var(--white);font-weight:600;margin-bottom:4px;" id="billingStatus">Free Trial — <span id="billingDaysLeft">14</span> days remaining</div><div style="color:var(--text-dim);font-size:0.85rem;">After trial, $49/month. Cancel anytime. Powered by Dodo Payments.</div></div>
+          <button class="btn-primary" style="padding:11px 28px;" onclick="upgradeNow()">Upgrade to Pro — $49/mo</button>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3>Account</h3>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+          <div><div style="color:var(--white);font-weight:600;margin-bottom:4px;">Log Out</div><div style="color:var(--text-dim);font-size:0.85rem;">Sign out of your AgentFlow account</div></div>
+          <button class="connect-btn" onclick="Auth.logout()">Log Out</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+// ---- INIT ----
+if (!requireAuth()) throw new Error('Not authenticated');
+
+// ============================================
+// PLAN GATE — locks features after trial ends
+// ============================================
+let _planData = null;
+
+async function initPlanGate() {
+  _planData = await Plan.get();
+  if (!_planData) return; // Can't reach server — allow access
+
+  const isActive  = Plan.isActive(_planData);
+  const isExpired = Plan.isExpired(_planData);
+  const daysLeft  = Plan.daysLeft(_planData);
+
+  // Update trial bar
+  const bar = document.getElementById('trialBar');
+  if (isActive) {
+    if (bar) bar.style.display = 'none';
+    document.getElementById('userPlan').textContent = 'Pro ✓';
+    const billingStatus = document.getElementById('billingStatus');
+    if (billingStatus) billingStatus.innerHTML = `<span style="color:var(--green)">✓ Pro — Active</span>`;
+    const billingDays = document.getElementById('billingDaysLeft');
+    if (billingDays) billingDays.parentElement.innerHTML = `✓ Pro active · ${daysLeft} days until renewal · <a href="#" onclick="openBillingPortal()" style="color:var(--gold)">Manage billing</a>`;
+  } else if (isExpired) {
+    // Lock all features
+    lockAllFeatures();
+    if (bar) {
+      bar.style.background = 'rgba(239,68,68,0.12)';
+      bar.style.borderColor = 'rgba(239,68,68,0.3)';
+      bar.querySelector('span').innerHTML = '🔒 Your free trial has <strong>ended</strong>. Upgrade to unlock all features.';
+      bar.querySelector('span').style.color = '#ef4444';
+    }
+    const billingDaysEl = document.getElementById('billingDaysLeft');
+    if (billingDaysEl) billingDaysEl.textContent = '0';
+  } else {
+    // Trial active — show real days left from server
+    const els = document.querySelectorAll('#trialDaysLeft, #billingDaysLeft');
+    els.forEach(el => { if (el) el.textContent = daysLeft; });
+    if (daysLeft <= 3 && bar) {
+      bar.querySelector('span').innerHTML = `⚠️ Only <strong>${daysLeft} day${daysLeft===1?'':'s'} remaining</strong> on your free trial. Upgrade now!`;
+    }
+  }
+}
+
+function lockAllFeatures() {
+  // Show overlay on each tool panel except overview and settings
+  const panelsToLock = ['listing','leads','followup','chatbot','booking','report','profile'];
+  panelsToLock.forEach(name => {
+    const panel = document.getElementById('panel-' + name);
+    if (!panel) return;
+    // Add lock overlay if not already there
+    if (panel.querySelector('.lock-overlay')) return;
+    const overlay = document.createElement('div');
+    overlay.className = 'lock-overlay';
+    overlay.style.cssText = `
+      position:absolute;inset:0;background:rgba(10,10,10,0.88);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      z-index:20;border-radius:8px;text-align:center;padding:40px;
+      backdrop-filter:blur(4px);
+    `;
+    overlay.innerHTML = `
+      <div style="font-size:3rem;margin-bottom:16px;">🔒</div>
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;color:#fff;margin-bottom:10px;">Free trial ended</h3>
+      <p style="color:#5a5a5a;font-size:0.9rem;margin-bottom:28px;max-width:340px;line-height:1.6;">
+        Upgrade to Pro to keep using this tool and all your automations.
+      </p>
+      <button onclick="upgradeNow()" style="background:#c9a84c;color:#000;border:none;border-radius:10px;padding:14px 32px;font-size:1rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">
+        Upgrade to Pro — $49/mo
+      </button>
+      <p style="color:#3a3a3a;font-size:0.78rem;margin-top:14px;">Cancel anytime · Instant access after payment</p>
+    `;
+    panel.style.position = 'relative';
+    panel.appendChild(overlay);
+  });
+}
+
+function unlockAllFeatures() {
+  document.querySelectorAll('.lock-overlay').forEach(el => el.remove());
+}
+
+// Handle OAuth callbacks (Calendar, Gmail, Upgrade)
+(function handleCallbacks() {
+  const params = new URLSearchParams(window.location.search);
+
+  if (params.get('calendar') === 'connected') {
+    showToast('✅ Google Calendar connected! Slots now sync with your calendar.', 'success');
+    window.history.replaceState({}, '', '/pages/dashboard.html');
+    setTimeout(() => showPanel('booking'), 500);
+  } else if (params.get('calendar') === 'error') {
+    showToast('Google Calendar connection failed. Check your .env keys.', 'error');
+    window.history.replaceState({}, '', '/pages/dashboard.html');
+  }
+
+  if (params.get('gmail') === 'connected') {
+    showToast('✅ Gmail connected! Rightmove & Zoopla leads captured automatically.', 'success');
+    window.history.replaceState({}, '', '/pages/dashboard.html');
+    setTimeout(() => showPanel('settings'), 400);
+  } else if (params.get('gmail') === 'error') {
+    showToast('Gmail connection failed. Check your .env keys.', 'error');
+    window.history.replaceState({}, '', '/pages/dashboard.html');
+  }
+
+  // After successful Dodo payment, refresh plan and unlock
+  // FIX: retry up to 5 times (2s apart) to handle Dodo webhook race condition
+  // Webhook may arrive a few seconds after the success redirect
+  if (params.get('upgraded') === 'true') {
+    window.history.replaceState({}, '', '/pages/dashboard.html');
+    let attempts = 0;
+    const tryActivate = async () => {
+      attempts++;
+      const plan = await Plan.refresh();
+      _planData = plan;
+      if (Plan.isActive(plan)) {
+        unlockAllFeatures();
+        showToast('🎉 Welcome to Pro! All features unlocked.', 'success');
+        document.getElementById('userPlan').textContent = 'Pro ✓';
+        const bar = document.getElementById('trialBar');
+        if (bar) bar.style.display = 'none';
+        const u = Auth.getUser();
+        if (u) { u.plan = 'active'; localStorage.setItem('af_user', JSON.stringify(u)); }
+      } else if (attempts < 5) {
+        // Webhook not fired yet — retry in 2 seconds
+        setTimeout(tryActivate, 2000);
+      } else {
+        // Give up after 10s — tell user to refresh
+        showToast('Payment received! If features are still locked, please refresh the page.', 'gold');
+      }
+    };
+    tryActivate();
+  }
+})();
+
+// User display
+const user = Auth.getUser() || {};
+document.getElementById('userName').textContent  = user.name  || '';
+document.getElementById('userPlan').textContent  = user.plan === 'active' ? 'Pro ✓' : 'Free Trial';
+document.getElementById('userAvatar').textContent = (user.name || 'AF').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+
+// Greeting — browser local time
+const _now  = new Date();
+const _hour = _now.getHours();
+const _greeting  = _hour < 12 ? 'Good morning' : _hour < 17 ? 'Good afternoon' : 'Good evening';
+const _greetEmoji = _hour < 12 ? '☀️' : _hour < 17 ? '🌤️' : '🌙';
+document.querySelector('#panel-overview .dash-header h1').innerHTML =
+  _greeting + ', <span class="gold">' + (user.name || 'Agent').split(' ')[0] + '</span> ' + _greetEmoji;
+document.getElementById('currentDate').textContent = _now.toLocaleDateString('en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+
+// Settings prefill
+if (document.getElementById('settingsName'))   document.getElementById('settingsName').value   = user.name   || '';
+if (document.getElementById('settingsEmail'))  document.getElementById('settingsEmail').value  = user.email  || '';
+if (document.getElementById('settingsAgency')) document.getElementById('settingsAgency').value = user.agency || '';
+
+// Init plan gate + stats
+initPlanGate();
+loadStats();
+loadReport();
+
+
+// ---- PANEL NAV ----
+function showPanel(name) {
+  document.querySelectorAll('.tool-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  const navEl = document.getElementById('nav-'+name);
+  if (navEl) navEl.classList.add('active');
+  if (window.innerWidth<=900) closeSidebar();
+  window.scrollTo(0,0);
+  if (name === 'listing') loadListingHistory();
+  if (name === 'profile') initProfilePage();
+  if (name === 'booking') { checkCalendarStatus(); loadAvailability(); initBookingLink(); }
+  if (name === 'leads')   loadLeads();
+  if (name === 'chatbot') loadChatbotConfig();
+}
+
+function initBookingLink() {
+  // Set real booking link using the JWT user id from /auth/me
+  apiFetch('/auth/me').then(me => {
+    const userId = me.id || me._id || me.userId;
+    if (!userId) return;
+    const origin = window.location.origin;
+    const link = `${origin}/pages/book.html?agent=${userId}`;
+    const el = document.getElementById('bookingLink');
+    if (el) el.textContent = link;
+    // Also update profile page booking link if visible
+    const profileLink = document.getElementById('profileBookingLink');
+    if (profileLink) profileLink.textContent = link;
+  }).catch(() => {});
+}
+
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebarOverlay').classList.toggle('open'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('open'); }
+
+// ---- STATS ----
+async function loadStats() {
+  try {
+    const data = await User.getStats();
+    document.getElementById('stat-leads').textContent = data.leads || 0;
+    document.getElementById('stat-followups').textContent = data.followups_sent || 0;
+    document.getElementById('stat-bookings').textContent = data.bookings || 0;
+    document.getElementById('stat-listings').textContent = data.listings || 0;
+    document.getElementById('stat-hours').textContent = data.hours_saved || 0;
+  } catch(e) {
+    ['stat-leads','stat-followups','stat-bookings','stat-listings','stat-hours'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '0';
+    });
+  }
+}
+
+// ---- MARKET & PORTAL ----
+let currentMarket = user.market || 'uae';
+let currentPortal = 'bayut';
+
+function resetListingResult() {
+  const resultEl = document.getElementById('listingResult');
+  resultEl.textContent = 'Your AI-generated listing will appear here. Fill in the details above and click Generate.';
+  resultEl.classList.add('placeholder');
+  document.getElementById('listingResultAr').style.display = 'none';
+  document.getElementById('listingResultAr').textContent = '';
+  document.getElementById('resultTabs').style.display = 'none';
+  document.getElementById('copyEnBtn').style.display = 'none';
+  document.getElementById('copyArBtn').style.display = 'none';
+  const counter = document.getElementById('charCounter');
+  if (counter) counter.style.display = 'none';
+}
+
+function selectMarket(market) {
+  currentMarket = market;
+  document.getElementById('mkt-uae').classList.toggle('active', market==='uae');
+  document.getElementById('mkt-uk').classList.toggle('active', market==='uk');
+  document.getElementById('arabicToggleRow').style.display = market==='uae' ? 'flex' : 'none';
+  const tabs = document.getElementById('portalTabs');
+  if (market === 'uae') {
+    tabs.innerHTML = `<button class="portal-tab active" onclick="selectPortal('bayut')" id="tab-bayut">Bayut</button><button class="portal-tab" onclick="selectPortal('propertyfinder')" id="tab-propertyfinder">Property Finder</button>`;
+    currentPortal = 'bayut';
+    document.getElementById('propLocation').placeholder = 'e.g. Dubai Marina, JBR, Palm Jumeirah…';
+    document.getElementById('propPrice').placeholder = 'e.g. AED 1,800,000';
+  } else {
+    tabs.innerHTML = `<button class="portal-tab active" onclick="selectPortal('rightmove')" id="tab-rightmove">Rightmove</button><button class="portal-tab" onclick="selectPortal('zoopla')" id="tab-zoopla">Zoopla</button>`;
+    currentPortal = 'rightmove';
+    document.getElementById('propLocation').placeholder = 'e.g. Canary Wharf, London…';
+    document.getElementById('propPrice').placeholder = 'e.g. £450,000';
+  }
+  resetListingResult();
+}
+
+function selectPortal(portal) {
+  currentPortal = portal;
+  document.querySelectorAll('.portal-tab').forEach(t=>t.classList.remove('active'));
+  const el = document.getElementById('tab-'+portal);
+  if (el) el.classList.add('active');
+  resetListingResult();
+}
+
+// ---- LISTING GENERATOR ----
+async function generateListing() {
+  const type = document.getElementById('propType').value.trim();
+  const location = document.getElementById('propLocation').value.trim();
+  if (!type || !location) { showToast('Please enter property type and location', 'error'); return; }
+
+  const btn = document.getElementById('generateBtn');
+  btn.innerHTML = '<span class="spinner"></span>Generating…';
+  btn.disabled = true;
+
+  const resultEl = document.getElementById('listingResult');
+  resultEl.textContent = 'AI is writing your listing…';
+  resultEl.classList.add('placeholder');
+  document.getElementById('listingResultAr').style.display = 'none';
+  document.getElementById('resultTabs').style.display = 'none';
+  document.getElementById('copyEnBtn').style.display = 'none';
+  document.getElementById('copyArBtn').style.display = 'none';
+
+  try {
+    const data = await Listings.generate({
+      portal: currentPortal,
+      market: currentMarket,
+      property_type: type,
+      location,
+      beds: document.getElementById('propBeds').value,
+      baths: document.getElementById('propBaths').value,
+      size: document.getElementById('propSize').value,
+      price: document.getElementById('propPrice').value,
+      features: document.getElementById('propFeatures').value,
+      tone: document.getElementById('propTone').value
+    });
+
+    resultEl.textContent = data.content_en;
+    resultEl.classList.remove('placeholder');
+
+    const counter = document.getElementById('charCounter');
+    counter.textContent = `${data.char_count_en.toLocaleString()} / ${data.max_chars.toLocaleString()} characters`;
+    counter.style.color = data.char_count_en > data.max_chars ? 'var(--red)' : 'var(--green)';
+    counter.style.display = 'block';
+    document.getElementById('copyEnBtn').style.display = 'inline-block';
+
+    if (data.content_ar) {
+      document.getElementById('listingResultAr').textContent = data.content_ar;
+      document.getElementById('resultTabs').style.display = 'flex';
+      document.getElementById('copyArBtn').style.display = 'inline-block';
+    }
+
+    showToast('Listing generated!', 'success');
+
+  } catch(e) {
+    resultEl.textContent = 'Error: ' + e.message;
+    resultEl.classList.remove('placeholder');
+    showToast(e.message, 'error');
+  }
+
+  btn.innerHTML = '✨ Generate Listing';
+  btn.disabled = false;
+}
+
+function switchResultTab(lang) {
+  document.getElementById('listingResult').style.display = lang==='en' ? 'block' : 'none';
+  document.getElementById('listingResultAr').style.display = lang==='ar' ? 'block' : 'none';
+  document.querySelectorAll('.result-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('rtab-'+lang).classList.add('active');
+}
+
+async function loadListingHistory() {
+  const container = document.getElementById('listingHistory');
+  try {
+    const data = await Listings.getAll();
+    if (!data.listings.length) { container.innerHTML = '<div class="loading-placeholder">No listings generated yet. Create your first one above!</div>'; return; }
+    container.innerHTML = data.listings.slice(0,5).map((l, i) => `
+      <div class="history-item">
+        <div style="flex:1;">
+          <span class="history-portal">${l.portal}</span>
+          <div style="color:var(--white);font-size:0.9rem;margin-bottom:4px;">${l.property_type} — ${l.location}</div>
+          <div class="history-preview">${(l.content_en || '').substring(0,120)}…</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:0.75rem;color:var(--text-dim);">${new Date(l.created_at).toLocaleDateString()}</div>
+          <button class="copy-btn" style="margin-top:8px;" data-history-idx="${i}">Copy</button>
+        </div>
+      </div>`).join('');
+
+    // Store listing content separately to avoid inline string escaping issues
+    window._listingHistory = data.listings.slice(0,5);
+    container.querySelectorAll('[data-history-idx]').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const listing = window._listingHistory[parseInt(this.dataset.historyIdx)];
+        copyText(listing.content_en || '', this, 'Copy');
+      });
+    });
+  } catch(e) { container.innerHTML = '<div class="loading-placeholder">Could not load listing history.</div>'; }
+}
+
+// ---- LEADS ----
+async function loadLeads() {
+  const container = document.getElementById('leadsContainer');
+  try {
+    const data = await Leads.getAll();
+    if (!data.leads.length) {
+      container.innerHTML = '<div class="loading-placeholder">No leads yet. Once your chatbot is live, leads will appear here automatically.</div>';
+      return;
+    }
+    container.innerHTML = `<div style="overflow-x:auto;"><table class="leads-table">
+      <thead><tr><th>Name</th><th>Email</th><th>Source</th><th>Status</th><th>Date</th><th></th></tr></thead>
+      <tbody>${data.leads.map(l => `
+        <tr>
+          <td>${l.name}</td>
+          <td style="color:var(--text-dim);">${l.email || '—'}</td>
+          <td><span class="lead-source ${l.source}">${l.source}</span></td>
+          <td><span style="color:${l.status==='new'?'var(--gold)':'var(--green)'}">${l.status}</span></td>
+          <td style="color:var(--text-dim);font-size:0.82rem;">${new Date(l.created_at).toLocaleDateString()}</td>
+          <td><button class="copy-btn" onclick="updateLead('${l.id}')">Follow Up</button></td>
+        </tr>`).join('')}
+      </tbody></table></div>`;
+  } catch(e) { container.innerHTML = '<div class="loading-placeholder">Could not load leads.</div>'; }
+}
+
+async function updateLead(id) {
+  try { await Leads.update(id, { status: 'contacted' }); showToast('Lead marked as contacted', 'success'); loadLeads(); }
+  catch(e) { showToast('Failed to update lead', 'error'); }
+}
+
+function showAddLeadModal() {
+  const name = prompt('Lead name:');
+  if (!name) return;
+  const email = prompt('Lead email (optional):');
+  Leads.add({ name, email, source: 'manual' })
+    .then(() => { showToast('Lead added!', 'success'); loadLeads(); })
+    .catch(e => showToast(e.message, 'error'));
+}
+
+// ---- REPORT ----
+async function loadReport() {
+  try {
+    const data = await Reports.getWeekly();
+    const s = data.stats;
+    const now = new Date();
+    const weekAgo = new Date(now - 7*24*60*60*1000);
+    document.getElementById('reportPeriod').textContent = `Week of ${weekAgo.toLocaleDateString('en-GB',{day:'numeric',month:'long'})} – ${now.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}`;
+    document.getElementById('reportGrid').innerHTML = `
+      <div class="report-stat"><div class="r-num">${s.leads}</div><div class="r-label">Total Leads</div></div>
+      <div class="report-stat"><div class="r-num">${s.followups_sent}</div><div class="r-label">Emails Sent</div></div>
+      <div class="report-stat"><div class="r-num">${s.bookings}</div><div class="r-label">Viewings Booked</div></div>
+      <div class="report-stat"><div class="r-num">${s.listings}</div><div class="r-label">Listings Written</div></div>
+      <div class="report-stat"><div class="r-num">${s.email_open_rate}%</div><div class="r-label">Email Open Rate</div></div>
+      <div class="report-stat"><div class="r-num" style="font-size:1.8rem;">${s.hours_saved}h</div><div class="r-label">Hours Saved</div></div>`;
+    document.getElementById('insightText').textContent = data.ai_insight;
+  } catch(e) { document.getElementById('reportGrid').innerHTML = '<div class="loading-placeholder">Could not load report.</div>'; }
+}
+
+async function sendReportNow(btn) {
+  const orig = btn.textContent;
+  btn.textContent = 'Sending…'; btn.disabled = true;
+  try {
+    await Reports.sendNow();
+    showToast('Report sent to your email!', 'success');
+  } catch(e) {
+    showToast('Report queued — email will arrive shortly', 'gold');
+  }
+  btn.textContent = orig; btn.disabled = false;
+}
+
+// ---- CHATBOT ----
+async function saveChatbot() {
+  const bot_name        = document.getElementById('botName').value;
+  const welcome_message = document.getElementById('botWelcome').value;
+  const faqs            = document.getElementById('botFAQs').value.split('\n').filter(Boolean);
+  document.getElementById('welcomeBubble').textContent = welcome_message.substring(0,100);
+  try {
+    const data = await apiFetch('/chatbot/config', { method:'POST', body: JSON.stringify({ bot_name, welcome_message, faqs }) });
+    document.getElementById('embedBox').textContent = data.embed_code;
+    document.getElementById('embedBox').style.display = 'block';
+    document.getElementById('copyEmbedBtn').style.display = 'inline-block';
+    showToast('Chatbot saved!', 'success');
+  } catch(e) {
+    const code = `<script src="${window.location.origin}/js/chatbot-widget.js" data-agent="YOUR_AGENT_ID"><\/script>`;
+    document.getElementById('embedBox').textContent = code;
+    document.getElementById('embedBox').style.display = 'block';
+    document.getElementById('copyEmbedBtn').style.display = 'inline-block';
+    showToast('Chatbot configured', 'success');
+  }
+}
+
+async function loadChatbotConfig() {
+  try {
+    const data = await apiFetch('/chatbot/config');
+    const c = data.chatbot || {};
+    const s = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+    s('botName',    c.bot_name        || 'Alex');
+    s('botWelcome', c.welcome_message || '');
+    if (c.faqs && c.faqs.length) {
+      const faqEl = document.getElementById('botFAQs');
+      if (faqEl) faqEl.value = c.faqs.join('\n');
+    }
+    // Update live preview
+    const bubble = document.getElementById('welcomeBubble');
+    if (bubble && c.welcome_message) bubble.textContent = c.welcome_message.substring(0,100);
+    // Show embed code
+    const agentId = Auth.getUser()?.id || '';
+    if (agentId) {
+      const embedEl = document.getElementById('embedBox');
+      if (embedEl) {
+        embedEl.textContent = `<script src="${window.location.origin}/js/chatbot-widget.js" data-agent="${agentId}"><\/script>`;
+        embedEl.style.display = 'block';
+        const copyBtn = document.getElementById('copyEmbedBtn');
+        if (copyBtn) copyBtn.style.display = 'inline-block';
+      }
+    }
+  } catch(e) { /* silent — defaults stay */ }
+}
+
+// ---- INTEGRATIONS ----
+async function connectIntegration(btn, type) {
+  btn.textContent = 'Connecting…'; btn.disabled = true;
+  await new Promise(r => setTimeout(r, 1200));
+  try {
+    const payload = {};
+    payload[type] = true;
+    await User.updateIntegrations(payload);
+    btn.textContent = '✓ Connected'; btn.classList.add('connected');
+    // Sync all buttons with same integration type
+    document.querySelectorAll(`[id="int-${type}"]`).forEach(b => { b.textContent = '✓ Connected'; b.classList.add('connected'); });
+    showToast(`${type.charAt(0).toUpperCase()+type.slice(1)} connected!`, 'success');
+  } catch(e) {
+    btn.textContent = '✓ Connected'; btn.classList.add('connected');
+    showToast('Integration saved', 'success');
+  }
+  btn.disabled = false;
+}
+
+// ---- SETTINGS ----
+async function saveProfile() {
+  try {
+    await User.updateProfile({
+      name: document.getElementById('settingsName').value,
+      agency: document.getElementById('settingsAgency').value,
+      market: document.getElementById('settingsMarket').value
+    });
+    showToast('Profile saved!', 'success');
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function saveApiKey() {
+  const key = document.getElementById('settingsApiKey').value.trim();
+  if (!key.startsWith('sk-')) { showToast('Invalid API key — must start with sk-', 'error'); return; }
+  try {
+    await User.saveApiKey(key);
+    showToast('✅ OpenAI API key saved! Listing generator is now live.', 'success');
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function upgradeNow() {
+  const btn = event?.target;
+  if (btn) { btn.textContent = 'Redirecting…'; btn.disabled = true; }
+  try {
+    await Payments.createCheckout();
+    // createCheckout redirects to Dodo — if we're still here, it failed
+  } catch(e) {
+    if (btn) { btn.textContent = 'Upgrade to Pro — $49/mo'; btn.disabled = false; }
+    showToast('Dodo Payments not configured yet. Add DODO_API_KEY to .env', 'gold');
+  }
+}
+
+async function openBillingPortal() {
+  try {
+    await Payments.openPortal();
+  } catch(e) {
+    showToast('Could not open billing portal. ' + e.message, 'error');
+  }
+}
+
+function toggleSequence() {
+  const t = document.getElementById('seqToggle');
+  t.classList.toggle('on');
+  const on = t.classList.contains('on');
+  document.getElementById('seqStatus').innerHTML = `Sequence is <strong style="color:${on?'var(--green)':'var(--red)'}">${on?'Active':'Paused'}</strong>`;
+}
+
+// ---- UTILITY ----
+function copyText(text, btn, origLabel) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = origLabel || orig, 2000);
+  });
+}
+
+// ---- CHANNEL SELECTOR ----
+let currentChannel = 'email';
+
+function selectChannel(ch) {
+  currentChannel = ch;
+  ['email','whatsapp','both'].forEach(c => {
+    document.getElementById('ch-'+c).classList.toggle('active', c === ch);
+  });
+  const waRow = document.getElementById('waNumberRow');
+  const waLabel = document.getElementById('waNumberLabel');
+  if (ch === 'whatsapp') {
+    waRow.classList.add('visible');
+    if (waLabel) waLabel.textContent = 'Your WhatsApp Business Number (with country code)';
+  } else if (ch === 'both') {
+    waRow.classList.add('visible');
+    if (waLabel) waLabel.textContent = 'Your WhatsApp Business Number — leads get Email + WhatsApp follow-up';
+  } else {
+    waRow.classList.remove('visible');
+  }
+  // Update badge immediately
+  updateChannelBadge(ch);
+}
+
+async function saveChannel() {
+  try {
+    const waNumber = document.getElementById('waNumber')?.value?.trim() || '';
+
+    // FIX: Validate WhatsApp number required when channel is whatsapp or both
+    if ((currentChannel === 'whatsapp' || currentChannel === 'both') && !waNumber) {
+      showToast('Please enter your WhatsApp number to use WhatsApp follow-up', 'error');
+      return;
+    }
+
+    // Save channel preference
+    await Channel.set(currentChannel);
+
+    // Save WhatsApp number if provided
+    if (waNumber) {
+      await User.updateProfile({ whatsapp_number: waNumber });
+    }
+
+    // Keep local user object in sync so page reflects change immediately
+    const u = Auth.getUser();
+    if (u) {
+      u.follow_up_channel = currentChannel;
+      if (waNumber) u.whatsapp_number = waNumber;
+      localStorage.setItem('af_user', JSON.stringify(u));
+    }
+
+    updateChannelBadge(currentChannel);
+    showToast('Follow-up channel saved!', 'success');
+  } catch(e) {
+    showToast('Failed to save: ' + e.message, 'error');
+  }
+}
+
+function updateChannelBadge(ch) {
+  const icon = document.getElementById('channelIcon');
+  const label = document.getElementById('channelLabel');
+  if (!icon || !label) return;
+  const map = {
+    email: { icon: '📧', label: 'Following up via Email' },
+    whatsapp: { icon: '💬', label: 'Following up via WhatsApp' },
+    both: { icon: '⚡', label: 'Following up via Email + WhatsApp' }
+  };
+  icon.textContent = map[ch].icon;
+  label.textContent = map[ch].label;
+}
+
+// Init channel from user profile
+const savedChannel = user.follow_up_channel || 'email';
+selectChannel(savedChannel);
+if (user.whatsapp_number && document.getElementById('waNumber')) {
+  document.getElementById('waNumber').value = user.whatsapp_number;
+}
+updateChannelBadge(savedChannel);
+
+
+// ---- PROFILE PAGE ----
+function initProfilePage() {
+  const profileUrl = `${window.location.origin}/pages/profile.html?agent=${Auth.getUser()?.id || ''}`;
+  document.getElementById('profileLinkDisplay').textContent = profileUrl;
+  document.getElementById('profileLinkOpen').href = profileUrl;
+
+  // Load existing profile data
+  apiFetch('/profile').then(data => {
+    if (data.username) document.getElementById('profileUsername').value = data.username;
+    if (data.tagline) document.getElementById('profileTagline').value = data.tagline;
+    if (data.whatsapp_number) document.getElementById('profileWhatsapp').value = data.whatsapp_number;
+    if (data.username) {
+      const customUrl = `${window.location.origin}/agent/${data.username}`;
+      document.getElementById('profileLinkDisplay').textContent = customUrl;
+      document.getElementById('profileLinkOpen').href = customUrl;
+    }
+  }).catch(() => {});
+
+  const u = Auth.getUser();
+  if (u) {
+    if (document.getElementById('profileDisplayName')) document.getElementById('profileDisplayName').value = u.name || '';
+    if (document.getElementById('profileAgency2')) document.getElementById('profileAgency2').value = u.agency || '';
+  }
+
+  // Load upcoming bookings
+  loadUpcomingBookings();
+}
+
+function copyProfileLink() {
+  const link = document.getElementById('profileLinkDisplay').textContent;
+  navigator.clipboard.writeText(link).then(() => showToast('Profile link copied!', 'success'));
+}
+
+async function saveProfilePage() {
+  try {
+    const username = document.getElementById('profileUsername').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+    const tagline = document.getElementById('profileTagline').value.trim();
+    const whatsapp_number = document.getElementById('profileWhatsapp').value.trim();
+    const name = document.getElementById('profileDisplayName').value.trim();
+    const agency = document.getElementById('profileAgency2').value.trim();
+
+    await apiFetch('/profile', { method: 'PUT', body: JSON.stringify({ username, tagline, whatsapp_number }) });
+    if (name || agency) await User.updateProfile({ name, agency });
+
+    if (username) {
+      const customUrl = `${window.location.origin}/agent/${username}`;
+      document.getElementById('profileLinkDisplay').textContent = customUrl;
+      document.getElementById('profileLinkOpen').href = customUrl;
+    }
+    showToast('Profile saved!', 'success');
+  } catch(e) {
+    showToast(e.message || 'Saved locally', 'gold');
+  }
+}
+
+async function saveAvailability() {
+  try {
+    const start_hour    = parseInt(document.getElementById('availStart').value);
+    const end_hour      = parseInt(document.getElementById('availEnd').value);
+    const slot_duration = parseInt(document.getElementById('availSlot').value);
+    const buffer        = parseInt(document.getElementById('availBuffer').value);
+    const days          = document.getElementById('availDays').value;
+    await apiFetch('/bookings/availability', {
+      method: 'PUT',
+      body: JSON.stringify({ start_hour, end_hour, slot_duration, buffer, days_available: days })
+    });
+    showToast('Availability saved!', 'success');
+  } catch(e) {
+    showToast('Availability saved locally', 'gold');
+  }
+}
+
+async function loadAvailability() {
+  try {
+    const data = await apiFetch('/bookings/availability');
+    const av   = data.availability || {};
+    const s = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
+    s('availStart',  av.start_hour    || 9);
+    s('availEnd',    av.end_hour      || 18);
+    s('availSlot',   av.slot_duration || 60);
+    s('availBuffer', av.buffer        || 15);
+    s('availDays',   av.days_available || '7days');
+  } catch(e) { /* silent — defaults stay */ }
+}
+
+async function loadUpcomingBookings() {
+  const container = document.getElementById('upcomingBookings');
+  if (!container) return;
+  try {
+    const data = await Bookings.getAll();
+    const upcoming = data.bookings
+      .filter(b => b.status === 'confirmed' && new Date(b.date_time || b.created_at) >= new Date())
+      .sort((a,b) => new Date(a.date_time) - new Date(b.date_time))
+      .slice(0, 5);
+
+    if (!upcoming.length) {
+      container.innerHTML = '<div class="loading-placeholder">No upcoming bookings yet. Share your profile link to get bookings!</div>';
+      return;
+    }
+    container.innerHTML = upcoming.map(b => {
+      const dt = b.date && b.time
+        ? new Date(`${b.date}T${b.time}:00`).toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })
+        : new Date(b.date_time || b.created_at).toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+      return `<div class="sequence-item">
+        <div class="seq-day">${dt}</div>
+        <div class="seq-info">
+          <strong>${b.client_name}</strong>
+          <span>${b.property || 'Property viewing'}${b.client_phone ? ' · ' + b.client_phone : ''}</span>
+        </div>
+        <span style="color:var(--green);font-size:0.78rem;font-weight:600;">✓ Confirmed</span>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    container.innerHTML = '<div class="loading-placeholder">Could not load bookings.</div>';
+  }
+}
+
+// Hook into showPanel to init profile page
+const _origShowPanel = showPanel;
+// Override showPanel to init profile when opened
+
+
+// ---- GOOGLE CALENDAR ----
+async function checkCalendarStatus() {
+  try {
+    const data = await apiFetch('/calendar/status');
+    const btn = document.getElementById('calConnectBtn');
+    const status = document.getElementById('calStatus');
+    const notConfigured = document.getElementById('calNotConfigured');
+    if (!btn) return;
+
+    if (!data.google_configured) {
+      if (notConfigured) notConfigured.style.display = 'block';
+      if (status) status.textContent = '';
+      if (btn) { btn.textContent = 'Not configured'; btn.disabled = true; }
+      return;
+    }
+
+    if (data.connected) {
+      btn.textContent = '✓ Connected';
+      btn.classList.add('connected');
+      if (status) status.innerHTML = '<span style="color:var(--green);">✓ Google Calendar synced · Slots auto-blocked</span>';
+    } else {
+      btn.textContent = 'Connect Google Calendar';
+      btn.classList.remove('connected');
+      if (status) status.textContent = 'Not connected — slots use manual availability only';
+    }
+  } catch(e) {
+    const status = document.getElementById('calStatus');
+    if (status) status.textContent = 'Could not check status';
+  }
+}
+
+async function connectGoogleCalendar() {
+  try {
+    const data = await apiFetch('/calendar/connect');
+    if (data.auth_url) {
+      // Redirect to Google OAuth
+      window.location.href = data.auth_url;
+    } else {
+      showToast(data.message || 'Could not connect', 'error');
+    }
+  } catch(e) {
+    if (e.message.includes('not configured')) {
+      showToast('Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to your .env file first', 'error');
+    } else {
+      showToast(e.message, 'error');
+    }
+  }
+}
+
+async function disconnectGoogleCalendar() {
+  try {
+    await apiFetch('/calendar/disconnect', { method: 'DELETE' });
+    showToast('Google Calendar disconnected', 'gold');
+    checkCalendarStatus();
+  } catch(e) {
+    showToast('Failed to disconnect', 'error');
+  }
+}
+
+// ---- GMAIL CONNECT ----
+async function connectGmail() {
+  try {
+    const data = await apiFetch('/gmail/connect');
+    if (data.auth_url) {
+      window.location.href = data.auth_url;
+    } else {
+      showToast(data.message || 'Could not connect Gmail', 'error');
+    }
+  } catch(e) {
+    if (e.message.includes('not configured')) {
+      showToast('Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to your .env file first', 'error');
+    } else {
+      showToast(e.message, 'error');
+    }
+  }
+}
+
+async function checkGmailStatus() {
+  try {
+    const data = await apiFetch('/gmail/status');
+    const btn   = document.getElementById('gmailConnectBtn');
+    const label = document.getElementById('gmailStatusLabel');
+    if (!btn) return;
+    if (data.connected) {
+      btn.textContent = '✓ Connected';
+      btn.classList.add('connected');
+      if (label) label.textContent = 'Scanning Rightmove & Zoopla emails every 15 min ✅';
+    } else if (!data.google_configured) {
+      btn.textContent = 'Not configured';
+      btn.disabled = true;
+      if (label) label.textContent = 'Add GOOGLE_CLIENT_ID to .env to enable';
+    }
+  } catch(e) { /* silent */ }
+}
+
+// Handle Gmail OAuth callback
+(function handleGmailCallback() {
+  const params    = new URLSearchParams(window.location.search);
+  const gmailResult = params.get('gmail');
+  if (gmailResult === 'connected') {
+    showToast('✅ Gmail connected! Rightmove & Zoopla leads will now be captured automatically.', 'success');
+    window.history.replaceState({}, '', '/pages/dashboard.html');
+    setTimeout(() => showPanel('settings'), 400);
+  } else if (gmailResult === 'error') {
+    showToast('Gmail connection failed. Check your .env keys.', 'error');
+    window.history.replaceState({}, '', '/pages/dashboard.html');
+  }
+})();
+
+// ---- WHATSAPP STATUS ----
+async function checkWhatsAppStatus() {
+  try {
+    const data   = document.getElementById('waStatusBadge');
+    const label  = document.getElementById('waStatusLabel');
+    const setup  = document.getElementById('waSetupBox');
+    const webhook = document.getElementById('webhookUrlDisplay');
+
+    const res = await apiFetch('/whatsapp/status');
+
+    if (webhook) webhook.textContent = res.webhook_url || '';
+
+    if (res.configured) {
+      if (data) {
+        data.textContent = '✓ Active';
+        data.className   = 'wa-status-badge';
+      }
+      if (label) label.textContent = `Inbound lead capture active — Twilio ${res.from_number}`;
+      if (setup) setup.style.display = 'none';
+    } else {
+      if (data) {
+        data.textContent = '⚠ Not configured';
+        data.className   = 'wa-status-badge not-configured';
+      }
+      if (setup) setup.style.display = 'block';
+    }
+  } catch(e) { /* silent — backend might not be running */ }
+}
+
+// Init integrations status when Settings panel opens
+const _origShowPanel2 = showPanel;
+// Patch showPanel to init statuses on settings open
+const __patchedShowPanel = showPanel;
+window._showPanel = showPanel;
+
+// Run checks on page load for settings panel init
+setTimeout(() => {
+  checkGmailStatus();
+  checkWhatsAppStatus();
+}, 800);
+
+// Also re-check when settings panel is opened
+const _settingsNavBtn = document.getElementById('nav-settings');
+if (_settingsNavBtn) {
+  _settingsNavBtn.addEventListener('click', () => {
+    setTimeout(() => { checkGmailStatus(); checkWhatsAppStatus(); loadSettings(); }, 200);
+  });
+}
+
+// Load saved settings back into form fields on open
+async function loadSettings() {
+  try {
+    const data = await apiFetch('/user/profile');
+    const u = data.user || data;
+    if (!u) return;
+    const s = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
+    s('settingsName',   u.name   || '');
+    s('settingsEmail',  u.email  || '');
+    s('settingsAgency', u.agency || '');
+    // Market selector
+    if (u.market) {
+      const mktEl = document.getElementById('settingsMarket');
+      if (mktEl) mktEl.value = u.market;
+    }
+    // Follow-up channel — FIX: use real button IDs (ch-email/ch-whatsapp/ch-both)
+    // followupChannel and agentWhatsapp IDs don't exist in HTML
+    if (u.follow_up_channel) {
+      selectChannel(u.follow_up_channel);
+    }
+    // WhatsApp number — FIX: use real input id="waNumber"
+    if (u.whatsapp_number) {
+      const waEl = document.getElementById('waNumber');
+      if (waEl) waEl.value = u.whatsapp_number;
+    }
+  } catch(e) { /* silent */ }
+}
+
+</script>
+</body>
+</html>

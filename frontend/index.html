@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgentFlow — AI Automation for UAE & UK Real Estate Agents</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo">Agent<span>Flow</span></a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#portals">Portals</a>
+      <a href="#pricing">Pricing</a>
+      <a href="/pages/login.html">Login</a>
+      <a href="/pages/signup.html" class="btn-nav">Start Free Trial</a>
+    </div>
+    <button class="hamburger" onclick="toggleMenu()">&#9776;</button>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#features">Features</a>
+    <a href="#portals">Portals</a>
+    <a href="#pricing">Pricing</a>
+    <a href="/pages/login.html">Login</a>
+    <a href="/pages/signup.html">Start Free Trial</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="hero-badge">🏆 Built for UAE & UK Real Estate Agents</div>
+    <h1 class="hero-title">Write your <span class="gold">Bayut, Property Finder & Rightmove</span> listings in 10 seconds.</h1>
+    <p class="hero-sub">AgentFlow automates listings, lead follow-up, client questions, appointments, and reporting — so Dubai and UK agents close deals instead of doing admin.</p>
+    <div class="hero-cta">
+      <a href="/pages/signup.html" class="btn-primary">Start 7-Day Free Trial</a>
+      <a href="#features" class="btn-ghost">See How It Works →</a>
+    </div>
+    <p class="hero-note">No credit card required · Cancel anytime · Setup in 10 minutes</p>
+    <div class="portal-badges">
+      <span class="portal-badge">Bayut</span>
+      <span class="portal-badge">Property Finder</span>
+      <span class="portal-badge">Rightmove</span>
+      <span class="portal-badge">Zoopla</span>
+      <span class="portal-badge arabic-badge">عربي</span>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="dashboard-preview">
+      <div class="preview-header">
+        <div class="preview-dot red"></div>
+        <div class="preview-dot yellow"></div>
+        <div class="preview-dot green"></div>
+        <span>AgentFlow Dashboard</span>
+      </div>
+      <div class="preview-body">
+        <div class="preview-stat">
+          <span class="stat-num">47</span>
+          <span class="stat-label">Leads This Week</span>
+        </div>
+        <div class="preview-stat">
+          <span class="stat-num">12</span>
+          <span class="stat-label">Auto Follow-Ups</span>
+        </div>
+        <div class="preview-stat">
+          <span class="stat-num">8</span>
+          <span class="stat-label">Bookings Made</span>
+        </div>
+        <div class="preview-bar">
+          <div class="bar-label">Listing Generator</div>
+          <div class="bar-track"><div class="bar-fill" style="width:85%"></div></div>
+        </div>
+        <div class="preview-bar">
+          <div class="bar-label">Lead Follow-Up</div>
+          <div class="bar-track"><div class="bar-fill" style="width:92%"></div></div>
+        </div>
+        <div class="preview-bar">
+          <div class="bar-label">Chatbot Active</div>
+          <div class="bar-track"><div class="bar-fill green-bar" style="width:100%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PORTALS -->
+<section class="portals" id="portals">
+  <div class="container">
+    <div class="section-label">Portal Ready</div>
+    <h2>Formatted for every major <span class="gold">UAE & UK portal</span></h2>
+    <p style="color:var(--text-dim);margin-bottom:40px;max-width:580px;">Every listing is automatically formatted to match the exact requirements of each portal — correct character limits, tone, structure, and language.</p>
+    <div class="portals-grid">
+      <div class="portal-card">
+        <div class="portal-flag">🇦🇪</div>
+        <div class="portal-name">Bayut</div>
+        <div class="portal-detail">English + Arabic · Up to 5,000 chars · Feature-focused tone</div>
+      </div>
+      <div class="portal-card">
+        <div class="portal-flag">🇦🇪</div>
+        <div class="portal-name">Property Finder</div>
+        <div class="portal-detail">English + Arabic · Up to 4,000 chars · Benefit-focused tone</div>
+      </div>
+      <div class="portal-card">
+        <div class="portal-flag">🇬🇧</div>
+        <div class="portal-name">Rightmove</div>
+        <div class="portal-detail">British English · Up to 2,000 chars · Formal tone</div>
+      </div>
+      <div class="portal-card">
+        <div class="portal-flag">🇬🇧</div>
+        <div class="portal-name">Zoopla</div>
+        <div class="portal-detail">British English · Up to 3,000 chars · Lifestyle tone</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section class="problem">
+  <div class="container">
+    <div class="section-label">The Problem</div>
+    <h2>UAE & UK agents lose <span class="gold">6 hours every day</span> to tasks that should be automatic</h2>
+    <div class="problem-grid">
+      <div class="problem-card">
+        <div class="problem-time">2 hrs</div>
+        <div class="problem-task">Writing Bayut & Rightmove listings manually</div>
+      </div>
+      <div class="problem-card">
+        <div class="problem-time">1.5 hrs</div>
+        <div class="problem-task">Following up with leads by hand</div>
+      </div>
+      <div class="problem-card">
+        <div class="problem-time">1 hr</div>
+        <div class="problem-task">Answering the same client questions</div>
+      </div>
+      <div class="problem-card">
+        <div class="problem-time">30 min</div>
+        <div class="problem-task">Back-and-forth appointment booking</div>
+      </div>
+      <div class="problem-card">
+        <div class="problem-time">1 hr</div>
+        <div class="problem-task">Writing individual emails</div>
+      </div>
+      <div class="problem-card total">
+        <div class="problem-time gold">6 hrs</div>
+        <div class="problem-task">Lost every single day</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="section-label">The Solution</div>
+    <h2>Five tools. One dashboard. <span class="gold">Zero wasted hours.</span></h2>
+    <div class="features-grid">
+      <div class="feature-card featured">
+        <div class="feature-icon">✍️</div>
+        <div class="feature-num">01</div>
+        <h3>AI Listing Generator</h3>
+        <p>Fill in property details. Get a professional listing ready for Bayut, Property Finder, Rightmove, or Zoopla in 10 seconds. English and Arabic.</p>
+        <div class="feature-save">Saves 2 hrs/day</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-num">02</div>
+        <h3>Auto Lead Follow-Up</h3>
+        <p>New lead comes in. Personalized email sent within 60 seconds. 3-day follow-up sequence runs automatically. Zero leads go cold.</p>
+        <div class="feature-save">Saves 1.5 hrs/day</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <div class="feature-num">03</div>
+        <h3>AI Website Chatbot</h3>
+        <p>24/7 chatbot on your website answers FAQs, captures leads, and pushes them into your CRM while you sleep.</p>
+        <div class="feature-save">Saves 1 hr/day</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📅</div>
+        <div class="feature-num">04</div>
+        <h3>Auto Appointment Booking</h3>
+        <p>Clients pick their own viewing time. Confirmation and reminders sent automatically. No back-and-forth ever again.</p>
+        <div class="feature-save">Saves 30 min/day</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <div class="feature-num">05</div>
+        <h3>Weekly AI Report</h3>
+        <p>Every Monday, a full performance report lands in your inbox. Leads, follow-ups, bookings — all tracked automatically.</p>
+        <div class="feature-save">Full visibility</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <div class="container">
+    <div class="section-label">Simple Pricing</div>
+    <h2>One plan. Everything included. <span class="gold">$49/month.</span></h2>
+    <p class="pricing-sub">Start with a 14-day free trial. No credit card required.</p>
+    <div class="pricing-card">
+      <div class="pricing-left">
+        <div class="pricing-badge">Most Popular</div>
+        <div class="pricing-amount">$49<span>/month</span></div>
+        <div class="pricing-trial">14 days free · then $49/mo · cancel anytime</div>
+        <a href="/pages/signup.html" class="btn-primary">Start Free Trial</a>
+      </div>
+      <div class="pricing-right">
+        <ul class="pricing-features">
+          <li>✓ AI Listing Generator — Bayut, Property Finder, Rightmove, Zoopla</li>
+          <li>✓ English + Arabic listing output</li>
+          <li>✓ Auto Lead Follow-Up — Email & WhatsApp</li>
+          <li>✓ AI Website Chatbot — 24/7 lead capture</li>
+          <li>✓ Auto Appointment Booking + Google Calendar</li>
+          <li>✓ Weekly AI Performance Reports</li>
+          <li>✓ Built-in CRM — All leads in one place</li>
+          <li>✓ Agent Profile Page included</li>
+          <li>✓ Gmail Integration</li>
+          <li>✓ Setup in under 15 minutes</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="index.html" class="logo">Agent<span>Flow</span></a>
+        <p>AI automation built exclusively for UAE and UK real estate agents. Stop doing admin. Start closing deals.</p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <strong>Product</strong>
+          <a href="#features">Features</a>
+          <a href="#portals">Portals</a>
+          <a href="#pricing">Pricing</a>
+          <a href="/pages/signup.html">Free Trial</a>
+        </div>
+        <div class="footer-col">
+          <strong>Account</strong>
+          <a href="/pages/login.html">Login</a>
+          <a href="/pages/signup.html">Sign Up</a>
+          <a href="pages/dashboard.html">Dashboard</a>
+        </div>
+        <div class="footer-col">
+          <strong>Markets</strong>
+          <a href="#">UAE — Dubai</a>
+          <a href="#">UAE — Abu Dhabi</a>
+          <a href="#">UK — London</a>
+          <a href="#">UK — Manchester</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 AgentFlow. All rights reserved.</span>
+      <span><a href="#" style="color:var(--text-dim);text-decoration:none;">Privacy Policy</a> · <a href="#" style="color:var(--text-dim);text-decoration:none;">Terms of Service</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/main.js"></script>
+</body>
+</html>

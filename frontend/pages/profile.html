@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Profile — AgentFlow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#080c14; --bg2:#0d1420; --bg3:#111827;
+    --border:rgba(255,255,255,0.07); --gold:#c9a84c;
+    --gold-dim:rgba(201,168,76,0.12); --text:#e8eaf0;
+    --text-dim:#8892a4; --green:#22c55e; --radius:14px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); }
+
+  .page { max-width:680px; margin:0 auto; padding:40px 20px 100px; }
+
+  /* Hero */
+  .profile-hero {
+    text-align:center; padding:48px 24px 32px;
+    background:var(--bg2); border:1px solid var(--border);
+    border-radius:20px; margin-bottom:24px;
+    background-image:radial-gradient(ellipse 80% 50% at 50% 0%, rgba(201,168,76,0.06) 0%, transparent 70%);
+  }
+  .profile-avatar {
+    width:90px; height:90px; border-radius:50%;
+    background:var(--gold-dim); border:3px solid rgba(201,168,76,0.4);
+    color:var(--gold); font-size:2rem; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+    margin:0 auto 16px;
+  }
+  .profile-name { font-family:'Cormorant Garamond',serif; font-size:2.2rem; font-weight:600; margin-bottom:6px; }
+  .profile-agency { color:var(--text-dim); font-size:0.95rem; margin-bottom:16px; }
+  .profile-badges { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:24px; }
+  .badge {
+    display:inline-flex; align-items:center; gap:6px;
+    background:var(--bg3); border:1px solid var(--border);
+    padding:6px 14px; border-radius:100px; font-size:0.78rem; color:var(--text-dim);
+  }
+  .badge.gold { background:var(--gold-dim); border-color:rgba(201,168,76,0.3); color:var(--gold); }
+  .profile-actions { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+  .btn-primary {
+    background:var(--gold); color:#000; font-weight:700;
+    padding:13px 28px; border-radius:10px; border:none;
+    font-size:0.92rem; cursor:pointer; font-family:'DM Sans',sans-serif;
+    text-decoration:none; display:inline-flex; align-items:center; gap:8px;
+    transition:all 0.2s; box-shadow:0 0 24px rgba(201,168,76,0.25);
+  }
+  .btn-primary:hover { background:#e8c97a; transform:translateY(-1px); }
+  .btn-secondary {
+    background:var(--bg3); border:1px solid var(--border); color:var(--text);
+    padding:13px 28px; border-radius:10px;
+    font-size:0.92rem; cursor:pointer; font-family:'DM Sans',sans-serif;
+    text-decoration:none; display:inline-flex; align-items:center; gap:8px;
+    transition:all 0.15s;
+  }
+  .btn-secondary:hover { border-color:rgba(255,255,255,0.2); color:var(--text); }
+
+  /* Stats */
+  .stats-row {
+    display:grid; grid-template-columns:repeat(3,1fr); gap:12px;
+    margin-bottom:24px;
+  }
+  .stat-card {
+    background:var(--bg2); border:1px solid var(--border);
+    border-radius:12px; padding:20px; text-align:center;
+  }
+  .stat-num { font-family:'Cormorant Garamond',serif; font-size:2rem; color:var(--gold); font-weight:700; }
+  .stat-label { color:var(--text-dim); font-size:0.78rem; margin-top:4px; }
+
+  /* Listings */
+  .section-title { font-family:'Cormorant Garamond',serif; font-size:1.4rem; margin-bottom:16px; }
+  .listings-grid { display:flex; flex-direction:column; gap:12px; margin-bottom:24px; }
+  .listing-card {
+    background:var(--bg2); border:1px solid var(--border);
+    border-radius:12px; padding:20px;
+    display:flex; align-items:center; justify-content:space-between;
+    gap:16px; transition:border-color 0.2s;
+  }
+  .listing-card:hover { border-color:rgba(201,168,76,0.25); }
+  .listing-info h4 { color:var(--text); font-size:0.95rem; margin-bottom:4px; }
+  .listing-info p { color:var(--text-dim); font-size:0.82rem; }
+  .listing-price { color:var(--gold); font-size:1rem; font-weight:700; white-space:nowrap; }
+  .listing-portal {
+    display:inline-block; padding:3px 10px; border-radius:100px;
+    font-size:0.72rem; font-weight:600; background:var(--gold-dim);
+    color:var(--gold); border:1px solid rgba(201,168,76,0.2); margin-top:4px;
+  }
+
+  /* Chatbot widget */
+  .chat-widget {
+    position:fixed; bottom:24px; right:24px; z-index:1000;
+  }
+  .chat-toggle {
+    width:60px; height:60px; border-radius:50%;
+    background:var(--gold); border:none; cursor:pointer;
+    font-size:1.4rem; box-shadow:0 4px 24px rgba(201,168,76,0.4);
+    transition:all 0.2s; display:flex; align-items:center; justify-content:center;
+  }
+  .chat-toggle:hover { transform:scale(1.05); box-shadow:0 6px 32px rgba(201,168,76,0.5); }
+  .chat-window {
+    position:fixed; bottom:100px; right:24px; z-index:1000;
+    width:340px; background:var(--bg2);
+    border:1px solid var(--border); border-radius:16px;
+    box-shadow:0 24px 80px rgba(0,0,0,0.6);
+    display:none; flex-direction:column; overflow:hidden;
+    max-height:500px;
+  }
+  .chat-window.open { display:flex; }
+  .chat-header {
+    background:var(--gold); padding:16px 20px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .chat-header-info { display:flex; align-items:center; gap:10px; }
+  .chat-header-avatar {
+    width:36px; height:36px; border-radius:50%;
+    background:rgba(0,0,0,0.2); color:#000; font-weight:700;
+    font-size:0.82rem; display:flex; align-items:center; justify-content:center;
+  }
+  .chat-header strong { color:#000; font-size:0.92rem; }
+  .chat-header span { color:rgba(0,0,0,0.6); font-size:0.75rem; display:block; }
+  .chat-close { background:none; border:none; color:rgba(0,0,0,0.5); cursor:pointer; font-size:1.2rem; }
+  .chat-messages { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px; }
+  .msg { max-width:82%; padding:10px 14px; border-radius:12px; font-size:0.875rem; line-height:1.5; }
+  .msg.bot { background:var(--bg3); border-radius:12px 12px 12px 4px; color:var(--text); align-self:flex-start; }
+  .msg.user { background:var(--gold); color:#000; border-radius:12px 12px 4px 12px; align-self:flex-end; font-weight:500; }
+  .chat-options { display:flex; flex-wrap:wrap; gap:6px; padding:0 16px 12px; }
+  .chat-option {
+    padding:7px 14px; border-radius:100px;
+    border:1px solid rgba(201,168,76,0.3); background:var(--gold-dim);
+    color:var(--gold); font-size:0.8rem; cursor:pointer;
+    font-family:'DM Sans',sans-serif; transition:all 0.15s;
+  }
+  .chat-option:hover { background:var(--gold); color:#000; }
+  .chat-input-area { display:flex; gap:8px; padding:12px 16px; border-top:1px solid var(--border); }
+  .chat-input {
+    flex:1; background:var(--bg3); border:1px solid var(--border);
+    border-radius:8px; padding:10px 14px; color:var(--text);
+    font-size:0.875rem; outline:none; font-family:'DM Sans',sans-serif;
+  }
+  .chat-input:focus { border-color:rgba(201,168,76,0.4); }
+  .chat-send {
+    background:var(--gold); color:#000; border:none;
+    border-radius:8px; padding:10px 16px; cursor:pointer;
+    font-size:0.875rem; font-weight:700; transition:background 0.15s;
+  }
+  .chat-send:hover { background:#e8c97a; }
+
+  .powered-by { text-align:center; margin-top:40px; font-size:0.78rem; color:var(--text-dim); }
+  .powered-by a { color:var(--gold); text-decoration:none; }
+
+  @media(max-width:480px) {
+    .stats-row { grid-template-columns:1fr 1fr; }
+    .profile-actions { flex-direction:column; align-items:center; }
+    .chat-window { width:calc(100vw - 32px); right:16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <!-- Profile Hero -->
+  <div class="profile-hero">
+    <div class="profile-avatar" id="profileAvatar">AF</div>
+    <h1 class="profile-name" id="profileName">Loading…</h1>
+    <p class="profile-agency" id="profileAgency"></p>
+    <div class="profile-badges">
+      <span class="badge gold" id="profileMarket">🇦🇪 UAE</span>
+      <span class="badge" id="profileSpecialty">Real Estate Agent</span>
+      <span class="badge">✓ AgentFlow Verified</span>
+    </div>
+    <div class="profile-actions">
+      <a href="#" id="bookBtn" class="btn-primary">📅 Book a Viewing</a>
+      <a href="#" id="whatsappBtn" class="btn-secondary">💬 WhatsApp</a>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-num" id="stat1">—</div><div class="stat-label">Properties Listed</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat2">—</div><div class="stat-label">Viewings This Month</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat3">—</div><div class="stat-label">Response Time</div></div>
+  </div>
+
+  <!-- Active Listings -->
+  <div id="listingsSection">
+    <h2 class="section-title">Current Listings</h2>
+    <div class="listings-grid" id="listingsGrid">
+      <div style="color:var(--text-dim);font-size:0.88rem;font-style:italic;padding:16px 0;">Loading listings…</div>
+    </div>
+  </div>
+
+  <div class="powered-by">Powered by <a href="/" target="_blank">AgentFlow</a> · AI automation for real estate agents</div>
+</div>
+
+<!-- Chatbot Widget -->
+<div class="chat-widget">
+  <div class="chat-window" id="chatWindow">
+    <div class="chat-header">
+      <div class="chat-header-info">
+        <div class="chat-header-avatar" id="chatAvatar">AF</div>
+        <div>
+          <strong id="chatBotName">Assistant</strong>
+          <span id="chatAgentName">Agent's Assistant</span>
+        </div>
+      </div>
+      <button class="chat-close" onclick="toggleChat()">✕</button>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-options" id="chatOptions"></div>
+    <div class="chat-input-area">
+      <input type="text" class="chat-input" id="chatInput" placeholder="Type a message…" onkeypress="handleEnter(event)">
+      <button class="chat-send" onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+  <button class="chat-toggle" id="chatToggle" onclick="toggleChat()">💬</button>
+</div>
+
+<script>
+const params     = new URLSearchParams(window.location.search);
+const agentParam = params.get('agent') || window.location.pathname.split('/').pop();
+const API        = window.location.origin + '/api';
+
+let agentData = null;
+let chatStage = 'welcome';
+let leadData  = {};
+
+// ---- INIT ----
+async function init() {
+  try {
+    const res  = await fetch(`${API}/profile/${agentParam}`);
+    const data = await res.json();
+    if (res.ok) {
+      agentData = data;
+      renderProfile(data);
+    } else {
+      document.getElementById('profileName').textContent = 'Agent not found';
+    }
+  } catch(e) {
+    document.getElementById('profileName').textContent = 'Could not load profile';
+  }
+  initChat();
+  // Show FAQ buttons after chat is initialized
+  if (agentData?.chatbot?.faqs?.length) {
+    showFaqOptions(agentData.chatbot.faqs.map(f => f.split('|')[0].trim()).filter(Boolean));
+  }
+}
+
+function showFaqOptions(faqQuestions) {
+  const container = document.getElementById('chatOptions');
+  if (!container) return;
+  const faqDiv = document.createElement('div');
+  faqDiv.id = 'faqButtons';
+  faqDiv.style.cssText = 'width:100%;margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;';
+  faqDiv.innerHTML = faqQuestions.map(q =>
+    `<button class="chat-option" style="font-size:0.75rem;opacity:0.85;" onclick="handleFaq(this)"
+     data-question="${q.replace(/"/g,'&quot;')}">${q}</button>`
+  ).join('');
+  container.appendChild(faqDiv);
+}
+
+function handleFaq(btn) {
+  const question = btn.dataset.question;
+  addUserMessage(question);
+  const faqs = agentData?.chatbot?.faqs || [];
+  const match = faqs.find(f => f.split('|')[0].trim().toLowerCase() === question.toLowerCase());
+  const answer = match ? match.split('|')[1]?.trim() : null;
+  setTimeout(() => {
+    addBotMessage(answer || "Great question! The agent will be in touch with more details.");
+    showOptions(['Buy', 'Rent', 'Invest', 'Just browsing']);
+    // Re-add FAQ buttons after options
+    if (faqs.length) {
+      setTimeout(() => showFaqOptions(faqs.map(f => f.split('|')[0].trim()).filter(Boolean)), 50);
+    }
+  }, 500);
+}
+
+function renderProfile(data) {
+  const name = data.name || 'Agent';
+  document.title = `${name} — Property Agent`;
+  document.getElementById('profileName').textContent = name;
+  document.getElementById('profileAgency').textContent = data.agency || '';
+  document.getElementById('profileAvatar').textContent = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('chatAvatar').textContent = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('chatAgentName').textContent = `${name}'s Assistant`;
+  document.getElementById('profileMarket').textContent = data.market === 'uk' ? '🇬🇧 UK Agent' : '🇦🇪 UAE Agent';
+  document.getElementById('profileSpecialty').textContent = data.agency ? data.agency : 'Real Estate';
+  document.getElementById('bookBtn').href = `/pages/book.html?agent=${data.id}`;
+  const waNum = data.whatsapp_number || data.whatsapp || '';
+  if (waNum) {
+    const cleanNum = waNum.replace(/[^0-9]/g, '');
+    document.getElementById('whatsappBtn').href = `https://wa.me/${cleanNum}`;
+    document.getElementById('whatsappBtn').target = '_blank';
+  } else {
+    document.getElementById('whatsappBtn').style.display = 'none';
+  }
+  document.getElementById('stat1').textContent = data.listings_count || '0';
+  document.getElementById('stat2').textContent = data.viewings_count || '8';
+  document.getElementById('stat3').textContent = '< 1 hr';
+  renderListings(data.listings || []);
+}
+
+function renderDemoProfile() {
+  agentData = { name:'Agent', agency:'', market:'uae', id:'demo' };
+  renderProfile({
+    ...agentData, id:'demo',
+    listings_count:0, viewings_count:0,
+    listings:[]
+  });
+}
+
+function renderListings(listings) {
+  const grid = document.getElementById('listingsGrid');
+  if (!listings.length) { grid.innerHTML = '<div style="color:var(--text-dim);font-size:0.88rem;font-style:italic;">No active listings at this time.</div>'; return; }
+  grid.innerHTML = listings.map(l => `
+    <div class="listing-card">
+      <div class="listing-info">
+        <h4>${l.type || l.property_type} — ${l.location}</h4>
+        <div><span class="listing-portal">${l.portal || 'Bayut'}</span></div>
+      </div>
+      <div class="listing-price">${l.price}</div>
+    </div>
+  `).join('');
+}
+
+// ---- CHATBOT ----
+function initChat() {
+  const agentName = agentData?.name || 'the agent';
+  const market = agentData?.market || 'uae';
+  const botName = agentData?.chatbot?.bot_name || 'Alex';
+  document.getElementById('chatBotName').textContent = botName;
+  chatStage = 'welcome';
+  addBotMessage(`Hi! 👋 I'm ${botName}, ${agentName}'s assistant.\n\n${market === 'uk' ? 'Looking to buy, rent, or invest in property? I can help you find the perfect home! 🏡' : 'Looking to buy, rent, or invest in Dubai? I can help you find the perfect property! 🏙️'}`);
+  showOptions(['Buy', 'Rent', 'Invest', 'Just browsing']);
+}
+
+function toggleChat() {
+  const win = document.getElementById('chatWindow');
+  win.classList.toggle('open');
+  if (win.classList.contains('open') && document.getElementById('chatMessages').children.length === 0) {
+    initChat();
+  }
+  document.getElementById('chatToggle').textContent = win.classList.contains('open') ? '✕' : '💬';
+}
+
+function addBotMessage(text) {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+  div.textContent = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  document.getElementById('chatOptions').innerHTML = '';
+}
+
+function addUserMessage(text) {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'msg user';
+  div.textContent = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  document.getElementById('chatOptions').innerHTML = '';
+}
+
+function showOptions(options) {
+  const container = document.getElementById('chatOptions');
+  // Remove existing main options but keep FAQ buttons
+  const faqEl = document.getElementById('faqButtons');
+  container.innerHTML = options.map(o =>
+    `<button class="chat-option" onclick="handleOption('${o}')">${o}</button>`
+  ).join('');
+  // Re-append FAQ buttons if they existed
+  if (faqEl) container.appendChild(faqEl);
+}
+
+function handleOption(option) {
+  addUserMessage(option);
+  processMessage(option);
+}
+
+function handleEnter(e) { if (e.key === 'Enter') sendMessage(); }
+
+function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  addUserMessage(text);
+  processMessage(text);
+}
+
+function processMessage(text) {
+  const lower = text.toLowerCase();
+  setTimeout(() => {
+    if (chatStage === 'welcome') {
+      chatStage = 'budget';
+      const isUK = agentData?.market === 'uk';
+      if (lower.includes('buy') || lower.includes('invest')) {
+        leadData.intent = lower.includes('invest') ? 'invest' : 'buy';
+        addBotMessage(`Great choice! ${isUK ? "What's your approximate budget?" : "What's your approximate budget? (in AED)"}`);
+        showOptions(isUK ? ['Under £300K','£300K-£500K','£500K-£1M','Over £1M'] : ['Under AED 1M','AED 1M-2M','AED 2M-5M','Over AED 5M']);
+      } else if (lower.includes('rent')) {
+        leadData.intent = 'rent';
+        addBotMessage(`Looking to rent — great! ${isUK ? "What's your monthly budget?" : "What's your monthly budget? (in AED)"}`);
+        showOptions(isUK ? ['Under £1,500','£1,500-£2,500','Over £2,500'] : ['Under AED 5K','AED 5K-10K','AED 10K-20K','Over AED 20K']);
+      } else {
+        chatStage = 'area';
+        addBotMessage(`No problem! ${isUK ? 'Which areas in the UK are you interested in?' : 'Which areas in Dubai are you interested in?'}`);
+        showOptions(isUK ? ['London','Manchester','Birmingham','Other'] : ['Dubai Marina','Downtown Dubai','Palm Jumeirah','Business Bay','Other']);
+      }
+    } else if (chatStage === 'budget') {
+      leadData.budget = text;
+      chatStage = 'area';
+      const isUK = agentData?.market === 'uk';
+      addBotMessage(`Perfect budget. ${isUK ? 'Which areas are you interested in?' : 'Which areas in Dubai interest you?'}`);
+      showOptions(isUK ? ['London','Manchester','Birmingham','Other'] : ['Dubai Marina','Downtown Dubai','Palm Jumeirah','Business Bay','JBR','Other']);
+    } else if (chatStage === 'area') {
+      leadData.area = text;
+      chatStage = 'name';
+      addBotMessage(`${text} is a fantastic choice! 🏠\n\nI'd love to send you current listings that match your requirements. Can I get your name?`);
+    } else if (chatStage === 'name') {
+      leadData.name = text;
+      chatStage = 'contact';
+      addBotMessage(`Nice to meet you, ${text}! 👋\n\nWhat's the best way to send you the listings? Email or WhatsApp?`);
+      showOptions(['Email', 'WhatsApp']);
+    } else if (chatStage === 'contact') {
+      chatStage = 'capture';
+      const isWhatsApp = lower.includes('whatsapp');
+      addBotMessage(isWhatsApp ? `Perfect! What's your WhatsApp number? (include country code)` : `Great! What's your email address?`);
+      leadData.contactType = isWhatsApp ? 'whatsapp' : 'email';
+    } else if (chatStage === 'capture') {
+      if (leadData.contactType === 'whatsapp') leadData.phone = text;
+      else leadData.email = text;
+      chatStage = 'done';
+      captureLead();
+      addBotMessage(`Thanks ${leadData.name}! 🎉\n\n${agentData?.name || 'The agent'} will be in touch within the hour with properties matching your requirements.\n\nWant to book a viewing now?`);
+      showOptions(['Yes, book a viewing!', 'No thanks, just listings']);
+    } else if (chatStage === 'done') {
+      if (lower.includes('book') || lower.includes('yes')) {
+        const agentId = agentData?.id || 'demo';
+        addBotMessage(`Pick a time that works for you 📅`);
+        setTimeout(() => {
+          window.open(`/pages/book.html?agent=${agentId}`, '_blank');
+        }, 800);
+      } else {
+        addBotMessage(`No problem! ${agentData?.name || 'The agent'} will send you listings shortly. Feel free to message anytime! 😊`);
+      }
+      chatStage = 'end';
+      setTimeout(() => {
+        addBot('Is there anything else I can help you with?');
+        showOpts(['Ask another question', 'Close chat']);
+      }, 1000);
+    }
+  }, 600);
+}
+
+async function captureLead() {
+  if (!agentData?.id || agentData.id === 'demo') return;
+  try {
+    await fetch(`${API}/leads/capture`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        agentId: agentData.id,
+        name: leadData.name,
+        email: leadData.email || '',
+        phone: leadData.phone || '',
+        source: 'profile_chatbot',
+        notes: `Intent: ${leadData.intent || 'browsing'}, Budget: ${leadData.budget || 'not specified'}, Area: ${leadData.area || 'not specified'}`
+      })
+    });
+  } catch(e) { console.log('Lead capture failed — demo mode'); }
+}
+
+init();
+</script>
+</body>
+</html>
