@@ -7,11 +7,13 @@ const { createClient } = require('@supabase/supabase-js');
 
 // ---- SUPABASE CLIENT ----
 let supabase = null;
+
+const ws = require('ws');
 if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
   supabase = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_SERVICE_KEY,
-    { auth: { autoRefreshToken: false, persistSession: false } }
+   { auth: { autoRefreshToken: false, persistSession: false }, global: { WebSocket: ws } }
   );
   console.log('[DB] Supabase connected ✓');
 } else {
