@@ -13,7 +13,7 @@ if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
   supabase = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_SERVICE_KEY,
-   { auth: { autoRefreshToken: false, persistSession: false }, global: { WebSocket: ws } }
+{ auth: { autoRefreshToken: false, persistSession: false }, global: { WebSocket: ws }, realtime: { transport: ws } }
   );
   console.log('[DB] Supabase connected ✓');
 } else {
