@@ -3,7 +3,7 @@
 // ============================================
 console.log('[PATH DEBUG] __dirname:', __dirname);
 console.log('[PATH DEBUG] process.cwd():', process.cwd());
-require('dotenv').config();
+try { require('dotenv').config(); } catch(e) {}
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
