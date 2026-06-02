@@ -5,4 +5,4 @@ nixPkgs = ["nodejs_22"]
 cmds = ["cd backend && npm install --production=false"]
 
 [start]
-cmd = "node backend/server.js"
+cmd = "node backend/server.js"5

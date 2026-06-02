@@ -25,10 +25,10 @@ router.get('/:username', async (req, res) => {
   if (!foundUser && supabase) {
     try {
       const { data } = await supabase
-        .from('users')
-        .select('*')
-        .or(`id.eq.${param},username.eq.${param}`)
-        .limit(1);
+  .from('users')
+  .select('*')
+  .eq('username', param)
+  .limit(1);
       if (data && data.length > 0) {
         foundUser = data[0];
         foundId   = data[0].id;
