@@ -77,11 +77,12 @@ try {
     if ((booking.userId === foundId || booking.user_id === foundId) && new Date(booking.created_at) >= monthStart)
       viewingsCount++;
   }
-  if (supabase && viewingsCount === 0) {
-    const { data: dbBookings } = await supabase
-      .from('bookings').select('id').eq('user_id', foundId).gte('created_at', monthStart.toISOString())
-      .catch(() => ({ data: [] }));
-    viewingsCount = dbBookings?.length || 0;
+if (supabase && viewingsCount === 0) {
+    try {
+      const { data: dbBookings } = await supabase
+        .from('bookings').select('id').eq('user_id', foundId).gte('created_at', monthStart.toISOString());
+      viewingsCount = dbBookings?.length || 0;
+    } catch(e) {}
   }
 
   // Strip sensitive fields
