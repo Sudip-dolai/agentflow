@@ -55,9 +55,12 @@ router.get('/:username', async (req, res) => {
 
   // Also check Supabase listings
   if (supabase && listingsCount === 0) {
-    const { data: dbListings } = await supabase
-      .from('listings').select('*').eq('user_id', foundId).limit(5)
-      .catch(() => ({ data: [] }));
+    let dbListings = [];
+try {
+  const result = await supabase
+    .from('listings').select('*').eq('user_id', foundId).limit(5);
+  dbListings = result.data || [];
+} catch(e) {}
     if (dbListings?.length) {
       listingsCount = dbListings.length;
       dbListings.forEach(l => agentListings.push({
