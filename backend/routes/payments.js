@@ -5,22 +5,18 @@
 const express = require('express');
 const router = express.Router();
 const { authMiddleware } = require('../middleware/auth');
-const { users, updateUser, getUserById } = require('../config/db');
+const { updateUser, getUserById } = require('../config/db');
 
-// ---- DODO PAYMENTS HELPER ----
-function getDodoHeaders() {
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${process.env.DODO_API_KEY}`
-  };
+// ---- DODO SDK CLIENT ----
+function getDodoClient() {
+  const DodoPayments = require('dodopayments');
+  return new DodoPayments({
+    bearerToken: process.env.DODO_API_KEY,
+    environment: 'live_mode'
+  });
 }
 
-const DODO_API = 'https://api.dodopayments.com/v1';
-const PLAN_PRICE = 4900; // $49.00 in cents
-const PLAN_NAME  = 'AgentFlow Pro — $49/month';
-
 // POST /api/payments/create-checkout — Create Dodo checkout session
-// FIX: authMiddleware added so req.user is populated
 router.post('/create-checkout', authMiddleware, async (req, res) => {
   try {
     if (!process.env.DODO_API_KEY) {
@@ -30,41 +26,33 @@ router.post('/create-checkout', authMiddleware, async (req, res) => {
       });
     }
 
-    const user = req.user; // now always defined thanks to authMiddleware
+    if (!process.env.DODO_PRODUCT_ID) {
+      return res.status(503).json({
+        error: 'Dodo Product not configured',
+        message: 'Add DODO_PRODUCT_ID to your .env file'
+      });
+    }
 
-    const payload = {
-      amount: PLAN_PRICE,
-      currency: 'USD',
-      description: PLAN_NAME,
+    const user = req.user;
+    const client = getDodoClient();
+
+    const session = await client.checkoutSessions.create({
+      product_cart: [
+        { product_id: process.env.DODO_PRODUCT_ID, quantity: 1 }
+      ],
+      subscription_data: { trial_period_days: 14 },
       customer: {
         email: user.email,
-        name: user.name
+        name:  user.name || user.full_name || user.email
       },
       metadata: {
         agentflow_user_id: req.userId
       },
-      success_url: `${process.env.FRONTEND_URL || 'https://theagentflow.co'}/pages/dashboard.html?upgraded=true`,
-      cancel_url:  `${process.env.FRONTEND_URL || 'https://theagentflow.co'}/pages/dashboard.html`,
-      billing_cycle: {
-        interval: 'month',
-        interval_count: 1
-      }
-    };
-
-    const response = await fetch(`${DODO_API}/checkout`, {
-      method: 'POST',
-      headers: getDodoHeaders(),
-      body: JSON.stringify(payload)
+      return_url: `${process.env.FRONTEND_URL || 'https://getagentflow.co'}/pages/dashboard.html?upgraded=true`
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error('[DODO] Checkout error:', data);
-      return res.status(500).json({ error: 'Failed to create checkout session' });
-    }
-
-    res.json({ url: data.checkout_url || data.url, session_id: data.id });
+    console.log('[DODO] Checkout session created:', session.checkout_url);
+    res.json({ url: session.checkout_url, session_id: session.id });
 
   } catch (err) {
     console.error('Checkout error:', err);
@@ -72,7 +60,7 @@ router.post('/create-checkout', authMiddleware, async (req, res) => {
   }
 });
 
-// POST /api/payments/webhook — Dodo webhook (PUBLIC — no auth, Dodo calls this)
+// POST /api/payments/webhook — Dodo webhook (PUBLIC — no auth)
 router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   try {
     let event;
@@ -86,18 +74,22 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 
     const eventType = event.type || event.event_type || '';
     const data = event.data || event;
-    const userId = data?.metadata?.agentflow_user_id || data?.customer?.metadata?.agentflow_user_id;
+    const userId = data?.metadata?.agentflow_user_id
+                || data?.customer?.metadata?.agentflow_user_id;
 
     if (!userId) {
       console.log('[DODO] No userId in webhook metadata');
       return res.status(200).json({ received: true });
     }
 
-    if (eventType.includes('payment.succeeded') || eventType.includes('subscription.activated') || eventType.includes('subscription.created')) {
-      // FIX: use getUserById (reads Supabase) — users.get() fails after server restart
+    if (
+      eventType.includes('payment.succeeded') ||
+      eventType.includes('subscription.activated') ||
+      eventType.includes('subscription.created')
+    ) {
       const u = await getUserById(userId);
       if (u) {
-        const now = new Date().toISOString();
+        const now       = new Date().toISOString();
         const periodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
         await updateUser(userId, {
           plan: 'active',
@@ -111,8 +103,11 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
       }
     }
 
-    if (eventType.includes('subscription.cancelled') || eventType.includes('subscription.deleted') || eventType.includes('payment.failed')) {
-      // FIX: use getUserById (reads Supabase) — users.get() fails after server restart
+    if (
+      eventType.includes('subscription.cancelled') ||
+      eventType.includes('subscription.deleted') ||
+      eventType.includes('payment.failed')
+    ) {
       const u = await getUserById(userId);
       if (u) {
         await updateUser(userId, { plan: 'cancelled' });
@@ -130,17 +125,15 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 });
 
 // GET /api/payments/status — Get subscription status
-// FIX: authMiddleware added so req.user is populated
 router.get('/status', authMiddleware, async (req, res) => {
   try {
-    const user = req.user; // now always defined thanks to authMiddleware
+    const user = req.user;
     const plan = user.plan || 'trial';
 
     if (plan === 'active') {
       const periodEnd = user.plan_period_end ? new Date(user.plan_period_end) : null;
       const now = new Date();
 
-      // Check if 30-day period has expired
       if (periodEnd && now > periodEnd) {
         await updateUser(req.userId, { plan: 'expired' });
         return res.json({
@@ -150,7 +143,10 @@ router.get('/status', authMiddleware, async (req, res) => {
         });
       }
 
-      const daysLeft = periodEnd ? Math.max(0, Math.ceil((periodEnd - now) / (1000 * 60 * 60 * 24))) : 30;
+      const daysLeft = periodEnd
+        ? Math.max(0, Math.ceil((periodEnd - now) / (1000 * 60 * 60 * 24)))
+        : 30;
+
       return res.json({
         plan: 'active',
         days_left: daysLeft,
@@ -161,8 +157,8 @@ router.get('/status', authMiddleware, async (req, res) => {
 
     if (plan === 'trial') {
       const trialStart = new Date(user.trial_start || Date.now());
-      const trialEnd = new Date(trialStart.getTime() + 14 * 24 * 60 * 60 * 1000);
-      const now = new Date();
+      const trialEnd   = new Date(trialStart.getTime() + 14 * 24 * 60 * 60 * 1000);
+      const now        = new Date();
 
       if (now > trialEnd) {
         await updateUser(req.userId, { plan: 'expired' });
@@ -194,32 +190,27 @@ router.get('/status', authMiddleware, async (req, res) => {
   }
 });
 
-// POST /api/payments/portal — Dodo billing portal (manage billing)
-// FIX: authMiddleware added so req.user is populated
+// POST /api/payments/portal — Dodo billing portal
 router.post('/portal', authMiddleware, async (req, res) => {
   try {
     if (!process.env.DODO_API_KEY) {
       return res.status(503).json({ error: 'Dodo Payments not configured' });
     }
 
-    const user = req.user; // now always defined thanks to authMiddleware
+    const user = req.user;
     if (!user.dodo_subscription_id) {
       return res.status(400).json({ error: 'No active subscription found' });
     }
 
-    const response = await fetch(`${DODO_API}/customer-portal`, {
-      method: 'POST',
-      headers: getDodoHeaders(),
-      body: JSON.stringify({
-        subscription_id: user.dodo_subscription_id,
-        return_url: `${process.env.FRONTEND_URL || 'https://theagentflow.co'}/pages/dashboard.html`
-      })
-    });
+    const client = getDodoClient();
+    const portal = await client.subscriptions.createPortalSession(
+      user.dodo_subscription_id,
+      {
+        return_url: `${process.env.FRONTEND_URL || 'https://getagentflow.co'}/pages/dashboard.html`
+      }
+    );
 
-    const data = await response.json();
-    if (!response.ok) return res.status(500).json({ error: 'Failed to open billing portal' });
-
-    res.json({ url: data.url });
+    res.json({ url: portal.url });
   } catch (err) {
     console.error('Portal error:', err);
     res.status(500).json({ error: 'Failed to open billing portal' });
