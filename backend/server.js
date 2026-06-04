@@ -84,6 +84,15 @@ app.get('/agent/:username', (req, res) => {
 res.sendFile(path.resolve(__dirname, '..', 'frontend', 'pages', 'profile.html'));
 });
 
+// ---- LEGAL PAGES ----
+app.get('/privacy', (req, res) => {
+  res.sendFile(path.resolve(__dirname, '..', 'frontend', 'pages', 'privacy.html'));
+});
+app.get('/terms', (req, res) => {
+  res.sendFile(path.resolve(__dirname, '..', 'frontend', 'pages', 'terms.html'));
+});
+
+
 // ---- CATCH ALL → SERVE FRONTEND ----
 app.get('*', (req, res) => {
 res.sendFile(path.resolve(__dirname, '..', 'frontend', 'index.html'));
