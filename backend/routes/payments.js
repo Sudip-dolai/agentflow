@@ -91,12 +91,13 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
       if (u) {
         const now       = new Date().toISOString();
         const periodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
-        await updateUser(userId, {
-          plan: 'active',
-          plan_start: now,
-          plan_period_end: periodEnd,
-          dodo_subscription_id: data.id || data.subscription_id || ''
-        });
+       await updateUser(userId, {
+  plan: 'active',
+  plan_start: now,
+  plan_period_end: periodEnd,
+  dodo_subscription_id: data.id || data.subscription_id || '',
+  dodo_customer_id: data.customer_id || data.customer?.id || ''
+});
         console.log(`[DODO] Plan activated for user ${userId}`);
       } else {
         console.error(`[DODO] User ${userId} not found — cannot activate plan`);
