@@ -1,6 +1,5 @@
 // ============================================
 // AGENTFLOW — WhatsApp Routes (Meta Business API)
-// Replaces Twilio with Meta WhatsApp Business API
 // ============================================
 
 const express = require('express');
@@ -8,7 +7,7 @@ const router  = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const { leads, users, getUserById, createLead, updateLead, updateUser, supabase } = require('../config/db');
 const { sendEmail } = require('../config/email');
-const Anthropic = require('@anthropic-ai/sdk');
+const OpenAI = require('openai');
 
 // ============================================
 // META API HELPER — Send WhatsApp message
@@ -36,16 +35,15 @@ async function sendMetaWhatsApp(phoneNumberId, accessToken, to, message) {
   if (!response.ok) throw new Error(data.error?.message || 'Meta API error');
   return data;
 }
-
 // ============================================
 // AI AUTO REPLY — Generate smart response
-// using Claude API
+// using OpenAI API
 // ============================================
 async function generateAIReply(agentName, agencyName, buyerMessage, propertyInfo) {
   try {
-    const client = new Anthropic();
-    const message = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const response = await client.chat.completions.create({
+      model: 'gpt-4o-mini',
       max_tokens: 300,
       messages: [{
         role: 'user',
@@ -66,13 +64,14 @@ Write a short, friendly WhatsApp reply that:
 Reply in English only. No hashtags. No emojis overload (max 2).`
       }]
     });
-    return message.content[0].text;
+    return response.choices[0].message.content;
   } catch (err) {
     console.error('[AI REPLY] Failed:', err.message);
     // Fallback message if AI fails
     return `Hi there! 👋 Thanks for your message. ${agentName} will get back to you shortly to discuss this property and confirm all the details. Quick question — what's your ideal timeline for moving? This helps us find the best options for you.\n\n— ${agentName}`;
   }
 }
+
 
 // ============================================
 // GET /api/whatsapp/meta/status
