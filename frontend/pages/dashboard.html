@@ -427,12 +427,12 @@ How long does buying take? | Typically 2-4 months from offer to completion.</tex
           <button class="channel-btn active" id="ch-email" onclick="selectChannel('email')">
             <span class="ch-icon">📧</span>
             <span class="ch-label">Email</span>
-            <span class="ch-sub">Best for UK agents</span>
+            <span class="ch-sub">Reply via email</span>
           </button>
           <button class="channel-btn" id="ch-whatsapp" onclick="selectChannel('whatsapp')">
             <span class="ch-icon">💬</span>
             <span class="ch-label">WhatsApp</span>
-            <span class="ch-sub">Best for UAE agents</span>
+            <span class="ch-sub">Instant personal messages</span>
           </button>
           <button class="channel-btn" id="ch-both" onclick="selectChannel('both')">
             <span class="ch-icon">⚡</span>
@@ -441,13 +441,57 @@ How long does buying take? | Typically 2-4 months from offer to completion.</tex
           </button>
         </div>
         <div class="wa-number-row" id="waNumberRow">
-          <label id="waNumberLabel">Your WhatsApp Business Number (with country code)</label>
-          <input type="tel" id="waNumber" placeholder="+971 50 123 4567 or +44 7700 900000">
-          <div class="wa-tip">
-            💬 <strong>How it works:</strong> When a lead comes in, AgentFlow sends them an instant WhatsApp message from your Twilio number within 60 seconds, then follows up on Day 1, Day 3, and Day 7 automatically.<br><br>
-            <strong>Setup:</strong> Add your Twilio keys to your .env file. Sign up free at <strong>console.twilio.com</strong>
+  <label id="waNumberLabel">Your WhatsApp Business Number (with country code)</label>
+  <input type="tel" id="waNumber" placeholder="+971 50 123 4567 or +44 7700 900000">
+  
+  <!-- Meta Connection Status -->
+  <div id="metaConnectionBox" style="margin-top:16px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:20px;">
+    
+    <!-- Not Connected State -->
+    <div id="metaNotConnected">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <span style="font-size:1.4rem;">💬</span>
+        <div>
+          <strong style="color:var(--white);display:block;">Connect Your WhatsApp Business Number</strong>
+          <span style="color:var(--text-dim);font-size:0.82rem;">Messages will send FROM your own number — not a shared number</span>
+        </div>
+      </div>
+      <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:8px;padding:12px;margin-bottom:16px;font-size:0.82rem;color:var(--text-dim);line-height:1.7;">
+        ✅ Leads auto-captured from Bayut & Property Finder<br>
+        ✅ AI replies from YOUR number within 60 seconds<br>
+        ✅ Follow-ups on Day 1, Day 3, Day 7 automatically<br>
+        ✅ All conversations visible in your Leads dashboard
+      </div>
+      <button class="btn-primary" onclick="connectWhatsApp()" id="connectMetaBtn" style="padding:11px 28px;">
+        🔗 Connect WhatsApp via Meta
+      </button>
+      <div style="color:var(--text-dim);font-size:0.78rem;margin-top:10px;">
+        ⚠️ Meta Business API approval required. 
+        <a href="#" onclick="showMetaStatus()" style="color:var(--gold);">Check approval status →</a>
+      </div>
+    </div>
+
+    <!-- Connected State (hidden by default) -->
+    <div id="metaConnected" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-size:1.4rem;">✅</span>
+          <div>
+            <strong style="color:var(--white);display:block;">WhatsApp Connected</strong>
+            <span style="color:var(--green);font-size:0.82rem;" id="metaConnectedNumber">+971 XXXXXXXXX</span>
           </div>
         </div>
+        <button class="connect-btn" onclick="disconnectWhatsApp()">Disconnect</button>
+      </div>
+      <div style="margin-top:12px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:8px;padding:12px;font-size:0.82rem;color:var(--text-dim);">
+        🟢 Auto lead capture: <strong style="color:var(--green)">Active</strong><br>
+        🟢 AI auto reply: <strong style="color:var(--green)">Active</strong><br>
+        🟢 Follow-up sequence: <strong style="color:var(--green)">Active</strong>
+      </div>
+    </div>
+
+  </div>
+</div>
         <div style="margin-top:16px;">
           <button class="btn-primary" style="padding:11px 28px;" onclick="saveChannel()">Save Channel</button>
         </div>
@@ -493,21 +537,13 @@ How long does buying take? | Typically 2-4 months from offer to completion.</tex
         </div>
 
         <!-- WhatsApp setup instructions (shown when not configured) -->
-        <div id="waSetupBox" style="display:none;margin-top:12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:20px;font-size:0.84rem;color:var(--text-dim);line-height:1.7;">
-          <strong style="color:var(--white);">💬 WhatsApp Setup (3 steps)</strong><br><br>
-          <strong style="color:var(--gold);">1.</strong> Sign up free at <a href="https://console.twilio.com" target="_blank" style="color:var(--gold);">console.twilio.com</a><br>
-          <strong style="color:var(--gold);">2.</strong> Add to your <code style="color:var(--gold);">.env</code> file:<br>
-          <div style="background:var(--bg);border-radius:6px;padding:10px 14px;margin:8px 0;font-family:monospace;font-size:0.8rem;color:var(--gold);">
-            TWILIO_ACCOUNT_SID=ACxxxx<br>
-            TWILIO_AUTH_TOKEN=your_token<br>
-            TWILIO_WHATSAPP_FROM=whatsapp:+14155238886
-          </div>
-          <strong style="color:var(--gold);">3.</strong> In Twilio Console → Messaging → WhatsApp Sandbox → set webhook:<br>
-          <div style="background:var(--bg);border-radius:6px;padding:10px 14px;margin:8px 0;font-family:monospace;font-size:0.8rem;color:var(--gold);" id="webhookUrlDisplay">
-            https://yourdomain.com/api/whatsapp/webhook
-          </div>
-          Once done, anyone who messages your WhatsApp number becomes a lead automatically ✅
-        </div>
+       <div id="waSetupBox" style="display:none;margin-top:12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:20px;font-size:0.84rem;color:var(--text-dim);line-height:1.7;">
+  <strong style="color:var(--white);">💬 WhatsApp — Pending Meta Approval</strong><br><br>
+  Your Meta Business API application is under review.<br>
+  Expected approval: <strong style="color:var(--gold);">2-10 business days</strong><br><br>
+  Once approved, agents can connect their own WhatsApp number directly from Settings.
+  </div>
+    </div>
       </div>
       <div class="settings-section">
         <h3>Billing</h3>
@@ -526,6 +562,7 @@ How long does buying take? | Typically 2-4 months from offer to completion.</tex
     </div>
   </main>
 </div>
+
 
 <script src="/js/api.js"></script>
 <script>
@@ -1101,11 +1138,11 @@ async function saveChannel() {
   try {
     const waNumber = document.getElementById('waNumber')?.value?.trim() || '';
 
-    // FIX: Validate WhatsApp number required when channel is whatsapp or both
-    if ((currentChannel === 'whatsapp' || currentChannel === 'both') && !waNumber) {
-      showToast('Please enter your WhatsApp number to use WhatsApp follow-up', 'error');
-      return;
-    }
+  // FIX: Validate WhatsApp number required when channel is whatsapp or both
+   if ((currentChannel === 'whatsapp' || currentChannel === 'both') && !waNumber) {
+  showToast('Please connect your WhatsApp via the Connect button below', 'error');
+  return;
+  }
 
     // Save channel preference
     await Channel.set(currentChannel);
@@ -1385,31 +1422,7 @@ async function checkGmailStatus() {
 
 // ---- WHATSAPP STATUS ----
 async function checkWhatsAppStatus() {
-  try {
-    const data   = document.getElementById('waStatusBadge');
-    const label  = document.getElementById('waStatusLabel');
-    const setup  = document.getElementById('waSetupBox');
-    const webhook = document.getElementById('webhookUrlDisplay');
-
-    const res = await apiFetch('/whatsapp/status');
-
-    if (webhook) webhook.textContent = res.webhook_url || '';
-
-    if (res.configured) {
-      if (data) {
-        data.textContent = '✓ Active';
-        data.className   = 'wa-status-badge';
-      }
-      if (label) label.textContent = `Inbound lead capture active — Twilio ${res.from_number}`;
-      if (setup) setup.style.display = 'none';
-    } else {
-      if (data) {
-        data.textContent = '⚠ Not configured';
-        data.className   = 'wa-status-badge not-configured';
-      }
-      if (setup) setup.style.display = 'block';
-    }
-  } catch(e) { /* silent — backend might not be running */ }
+  checkMetaStatus();
 }
 
 // Init integrations status when Settings panel opens
@@ -1458,6 +1471,66 @@ async function loadSettings() {
       if (waEl) waEl.value = u.whatsapp_number;
     }
   } catch(e) { /* silent */ }
+}
+// ---- META WHATSAPP CONNECT ----
+async function connectWhatsApp() {
+  const btn = document.getElementById('connectMetaBtn');
+  btn.innerHTML = '<span class="spinner"></span>Connecting...';
+  btn.disabled = true;
+
+  try {
+    const data = await apiFetch('/whatsapp/meta/embedded-signup');
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      showToast('Meta API approval pending. Check back in 2-10 days.', 'gold');
+    }
+  } catch(e) {
+    showToast('Meta WhatsApp API approval pending. We\'ll notify you when ready!', 'gold');
+  }
+
+  btn.innerHTML = '🔗 Connect WhatsApp via Meta';
+  btn.disabled = false;
+}
+
+async function disconnectWhatsApp() {
+  if (!confirm('Disconnect WhatsApp? Lead capture and auto-reply will stop.')) return;
+  try {
+    await apiFetch('/whatsapp/meta/disconnect', { method: 'POST' });
+    document.getElementById('metaConnected').style.display = 'none';
+    document.getElementById('metaNotConnected').style.display = 'block';
+    showToast('WhatsApp disconnected', 'gold');
+    const u = Auth.getUser();
+    if (u) { u.meta_connected = false; localStorage.setItem('af_user', JSON.stringify(u)); }
+  } catch(e) {
+    showToast('Failed to disconnect', 'error');
+  }
+}
+
+async function checkMetaStatus() {
+  try {
+    const data = await apiFetch('/whatsapp/meta/status');
+    const badge = document.getElementById('waStatusBadge');
+    const label = document.getElementById('waStatusLabel');
+
+    if (data.connected) {
+      document.getElementById('metaConnected').style.display = 'block';
+      document.getElementById('metaNotConnected').style.display = 'none';
+      if (document.getElementById('metaConnectedNumber')) {
+        document.getElementById('metaConnectedNumber').textContent = data.phone_number || '';
+      }
+      if (badge) { badge.textContent = '✓ Active'; badge.className = 'wa-status-badge'; }
+      if (label) label.textContent = `Auto lead capture active — ${data.phone_number}`;
+    } else {
+      if (document.getElementById('metaConnected')) document.getElementById('metaConnected').style.display = 'none';
+      if (document.getElementById('metaNotConnected')) document.getElementById('metaNotConnected').style.display = 'block';
+      if (badge) { badge.textContent = '⚠ Not connected'; badge.className = 'wa-status-badge not-configured'; }
+    }
+  } catch(e) { /* silent */ }
+}
+
+function showMetaStatus() {
+  showToast('Meta Business verification submitted. Approval takes 2-10 business days. You\'ll receive an email from Meta.', 'gold');
 }
 
 </script>
