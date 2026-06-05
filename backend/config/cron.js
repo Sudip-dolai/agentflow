@@ -49,7 +49,7 @@ cron.schedule('0 * * * *', async () => {
     if (user.plan !== 'active' && user.plan !== 'trial') continue;
 
     const hoursOld   = (now - new Date(lead.created_at)) / (1000 * 60 * 60);
-    const channel    = user.follow_up_channel || 'email';
+    const channel = (user.gmail_connected && user.whatsapp_connected) ? 'both' : user.whatsapp_connected ? 'whatsapp' : 'email';
     const bookingUrl = `${process.env.FRONTEND_URL || 'https://theagentflow.co'}/pages/book.html?agent=${lead.userId}`;
 
     try {

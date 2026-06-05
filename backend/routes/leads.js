@@ -14,7 +14,7 @@ const { sendWhatsApp, templates } = require('../config/whatsapp');
 
 // ---- HELPER: fire instant follow-up ----
 async function fireInstantFollowup(lead, user) {
- const channel = user.whatsapp_connected ? 'whatsapp' : 'email';
+const channel = (user.gmail_connected && user.whatsapp_connected) ? 'both' : user.whatsapp_connected ? 'whatsapp' : 'email';
   const bookingUrl = `${process.env.FRONTEND_URL || 'https://theagentflow.co'}/pages/book.html?agent=${user.id || lead.userId}`;
   const sourceLabel = lead.source
     ? lead.source.charAt(0).toUpperCase() + lead.source.slice(1)
@@ -103,7 +103,7 @@ router.post('/', authMiddleware, async (req, res) => {
     };
 
     await createLead(leadId, leadData);
-    scheduleFollowups(leadId, leadData, req.userId);
+   scheduleFollowups(leadId, leadData, agentId); 
 
     // Fire instant follow-up — await getUserById (async — reads Supabase)
     const user = await getUserById(req.userId);
@@ -213,5 +213,43 @@ router.post('/:id/followup', authMiddleware, async (req, res) => {
     res.status(500).json({ error: 'Failed to send follow-up' });
   }
 });
+function scheduleFollowups(leadId, leadData, userId) {
+  const delays = [
+    { day: 1, ms: 1 * 24 * 60 * 60 * 1000 },
+    { day: 3, ms: 3 * 24 * 60 * 60 * 1000 },
+    { day: 7, ms: 7 * 24 * 60 * 60 * 1000 },
+  ];
+
+  delays.forEach(({ day, ms }) => {
+    setTimeout(async () => {
+      try {
+        const lead = await getLeadById(leadId);
+        const user = await getUserById(userId);
+        if (!lead || !user) return;
+        if (lead.status === 'converted') return; // stop if already converted
+
+        const bookingUrl = `${process.env.FRONTEND_URL}/pages/book.html?agent=${userId}`;
+
+        if (lead.email) {
+          const subjects = {
+            1: `I found properties that match what you're looking for`,
+            3: `Ready to schedule a viewing? Pick a time that works for you`,
+            7: `Still looking? Let me know how I can help`
+          };
+          await sendEmail({
+            to:      lead.email,
+            subject: subjects[day],
+            html:    leadFollowupEmail(user.name, user.agency, bookingUrl)
+          });
+          console.log(`[FOLLOWUP] Day ${day} email sent to ${lead.email}`);
+        }
+
+        await updateLead(leadId, { ...lead, followup_stage: day });
+      } catch (err) {
+        console.error(`[FOLLOWUP] Day ${day} error:`, err.message);
+      }
+    }, ms);
+  });
+}
 
 module.exports = router;

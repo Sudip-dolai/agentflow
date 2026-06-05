@@ -205,7 +205,7 @@ async function scanGmailForLeads(userId, user) {
 
       // Fire instant follow-up
       const bookingUrl = `${process.env.FRONTEND_URL || 'https://theagentflow.co'}/pages/book.html?agent=${userId}`;
-      const channel = user.follow_up_channel || 'email';
+     const channel = (user.gmail_connected && user.whatsapp_connected) ? 'both' : user.whatsapp_connected ? 'whatsapp' : 'email';
 
       if ((channel === 'email' || channel === 'both') && lead.email) {
         sendEmail({
