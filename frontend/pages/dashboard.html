@@ -304,7 +304,7 @@ How long does buying take? | Typically 2-4 months from offer to completion.</tex
           <div class="cal-step"><div class="cal-step-num">4</div><div class="cal-step-info"><strong>Automatic Reminders</strong><span>Confirmation and reminder 24hrs before viewing — automatically.</span><div style="display:flex;align-items:center;gap:10px;margin-top:12px;"><div class="toggle on"></div><span style="color:var(--green);font-size:0.85rem;">Reminders ON</span></div></div></div>
         </div>
       </div>
-    </div>
+        </div>
 
     <!-- REPORT -->
     <div class="tool-panel" id="panel-report">
@@ -400,9 +400,10 @@ How long does buying take? | Typically 2-4 months from offer to completion.</tex
       </div>
     </div>
 
-    <!-- SETTINGS -->
+   <!-- SETTINGS -->
     <div class="tool-panel" id="panel-settings">
       <div class="dash-header"><div><h1>Settings</h1><p>Manage your account, integrations, and billing</p></div></div>
+
       <div class="settings-section">
         <h3>Profile</h3>
         <div class="input-row">
@@ -413,94 +414,18 @@ How long does buying take? | Typically 2-4 months from offer to completion.</tex
           <div class="form-group"><label>Agency Name</label><input type="text" id="settingsAgency"></div>
           <div class="form-group"><label>Market</label>
             <select id="settingsMarket" style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:13px 16px;color:var(--white);font-size:0.95rem;font-family:'DM Sans',sans-serif;width:100%;outline:none;">
-              <option value="uae">🇦🇪 UAE — Dubai</option><option value="uae-ad">🇦🇪 UAE — Abu Dhabi</option>
-              <option value="uk">🇬🇧 UK — London</option><option value="uk-man">🇬🇧 UK — Manchester</option>
+              <option value="uae">🇦🇪 UAE — Dubai</option>
+              <option value="uae-ad">🇦🇪 UAE — Abu Dhabi</option>
+              <option value="uk">🇬🇧 UK — London</option>
+              <option value="uk-man">🇬🇧 UK — Manchester</option>
             </select>
           </div>
         </div>
         <button class="btn-primary" style="padding:11px 28px;" onclick="saveProfile()">Save Changes</button>
       </div>
-      <div class="settings-section">
-        <h3>📱 Follow-Up Channel</h3>
-        <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:16px;">How do your leads contact you? AgentFlow will follow up on the same channel automatically.</p>
-        <div class="channel-selector">
-          <button class="channel-btn active" id="ch-email" onclick="selectChannel('email')">
-            <span class="ch-icon">📧</span>
-            <span class="ch-label">Email</span>
-            <span class="ch-sub">Reply via email</span>
-          </button>
-          <button class="channel-btn" id="ch-whatsapp" onclick="selectChannel('whatsapp')">
-            <span class="ch-icon">💬</span>
-            <span class="ch-label">WhatsApp</span>
-            <span class="ch-sub">Instant personal messages</span>
-          </button>
-          <button class="channel-btn" id="ch-both" onclick="selectChannel('both')">
-            <span class="ch-icon">⚡</span>
-            <span class="ch-label">Both</span>
-            <span class="ch-sub">Maximum coverage</span>
-          </button>
-        </div>
-        <div class="wa-number-row" id="waNumberRow">
-  <label id="waNumberLabel">Your WhatsApp Business Number (with country code)</label>
-  <input type="tel" id="waNumber" placeholder="+971 50 123 4567 or +44 7700 900000">
-  
-  <!-- Meta Connection Status -->
-  <div id="metaConnectionBox" style="margin-top:16px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:20px;">
-    
-    <!-- Not Connected State -->
-    <div id="metaNotConnected">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-        <span style="font-size:1.4rem;">💬</span>
-        <div>
-          <strong style="color:var(--white);display:block;">Connect Your WhatsApp Business Number</strong>
-          <span style="color:var(--text-dim);font-size:0.82rem;">Messages will send FROM your own number — not a shared number</span>
-        </div>
-      </div>
-      <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:8px;padding:12px;margin-bottom:16px;font-size:0.82rem;color:var(--text-dim);line-height:1.7;">
-        ✅ Leads auto-captured from Bayut & Property Finder<br>
-        ✅ AI replies from YOUR number within 60 seconds<br>
-        ✅ Follow-ups on Day 1, Day 3, Day 7 automatically<br>
-        ✅ All conversations visible in your Leads dashboard
-      </div>
-      <button class="btn-primary" onclick="connectWhatsApp()" id="connectMetaBtn" style="padding:11px 28px;">
-        🔗 Connect WhatsApp via Meta
-      </button>
-      <div style="color:var(--text-dim);font-size:0.78rem;margin-top:10px;">
-        ⚠️ Meta Business API approval required. 
-        <a href="#" onclick="showMetaStatus()" style="color:var(--gold);">Check approval status →</a>
-      </div>
-    </div>
-
-    <!-- Connected State (hidden by default) -->
-    <div id="metaConnected" style="display:none;">
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-        <div style="display:flex;align-items:center;gap:12px;">
-          <span style="font-size:1.4rem;">✅</span>
-          <div>
-            <strong style="color:var(--white);display:block;">WhatsApp Connected</strong>
-            <span style="color:var(--green);font-size:0.82rem;" id="metaConnectedNumber">+971 XXXXXXXXX</span>
-          </div>
-        </div>
-        <button class="connect-btn" onclick="disconnectWhatsApp()">Disconnect</button>
-      </div>
-      <div style="margin-top:12px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:8px;padding:12px;font-size:0.82rem;color:var(--text-dim);">
-        🟢 Auto lead capture: <strong style="color:var(--green)">Active</strong><br>
-        🟢 AI auto reply: <strong style="color:var(--green)">Active</strong><br>
-        🟢 Follow-up sequence: <strong style="color:var(--green)">Active</strong>
-      </div>
-    </div>
-
-  </div>
-</div>
-        <div style="margin-top:16px;">
-          <button class="btn-primary" style="padding:11px 28px;" onclick="saveChannel()">Save Channel</button>
-        </div>
-      </div>
 
       <div class="settings-section">
         <h3>Integrations</h3>
-
-        <!-- Gmail -->
         <div class="integration-item">
           <div class="int-info">
             <div class="int-icon">📧</div>
@@ -511,8 +436,6 @@ How long does buying take? | Typically 2-4 months from offer to completion.</tex
           </div>
           <button class="connect-btn" id="gmailConnectBtn" onclick="connectGmail()">Connect Gmail</button>
         </div>
-
-        <!-- Google Calendar -->
         <div class="integration-item">
           <div class="int-info">
             <div class="int-icon">📅</div>
@@ -523,8 +446,6 @@ How long does buying take? | Typically 2-4 months from offer to completion.</tex
           </div>
           <button class="connect-btn" id="int-calendar" onclick="connectGoogleCalendar()">Connect</button>
         </div>
-
-        <!-- WhatsApp -->
         <div class="integration-item">
           <div class="int-info">
             <div class="int-icon">💬</div>
@@ -533,36 +454,34 @@ How long does buying take? | Typically 2-4 months from offer to completion.</tex
               <span id="waStatusLabel">Auto-creates leads when someone messages you on WhatsApp (UAE agents)</span>
             </div>
           </div>
-        <button id="waStatusBadge" class="wa-status-badge not-configured" onclick="selectChannel('whatsapp');document.getElementById('metaConnectionBox').scrollIntoView({behavior:'smooth'})">Set Up WhatsApp</button>
+          <button id="waStatusBadge" class="connect-btn" onclick="connectWhatsApp()">Connect WhatsApp</button>
+        </div>
+      </div>
 
-        <!-- WhatsApp setup instructions (shown when not configured) -->
-       <div id="waSetupBox" style="display:none;margin-top:12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:20px;font-size:0.84rem;color:var(--text-dim);line-height:1.7;">
-  <strong style="color:var(--white);">💬 WhatsApp — Pending Meta Approval</strong><br><br>
-  Your Meta Business API application is under review.<br>
-  Expected approval: <strong style="color:var(--gold);">2-10 business days</strong><br><br>
-  Once approved, agents can connect their own WhatsApp number directly from Settings.
-  </div>
-    </div>
-      </div>
-      </div>
       <div class="settings-section">
         <h3>Billing</h3>
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
-          <div><div style="color:var(--white);font-weight:600;margin-bottom:4px;" id="billingStatus">Free Trial — <span id="billingDaysLeft">14</span> days remaining</div><div style="color:var(--text-dim);font-size:0.85rem;">After trial, $49/month. Cancel anytime.</div></div>
+          <div>
+            <div style="color:var(--white);font-weight:600;margin-bottom:4px;" id="billingStatus">Free Trial — <span id="billingDaysLeft">14</span> days remaining</div>
+            <div style="color:var(--text-dim);font-size:0.85rem;">After trial, $49/month. Cancel anytime.</div>
+          </div>
           <button class="btn-primary" style="padding:11px 28px;" onclick="upgradeNow()">Upgrade to Pro — $49/mo</button>
         </div>
       </div>
+
       <div class="settings-section">
         <h3>Account</h3>
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
-          <div><div style="color:var(--white);font-weight:600;margin-bottom:4px;">Log Out</div><div style="color:var(--text-dim);font-size:0.85rem;">Sign out of your AgentFlow account</div></div>
+          <div>
+            <div style="color:var(--white);font-weight:600;margin-bottom:4px;">Log Out</div>
+            <div style="color:var(--text-dim);font-size:0.85rem;">Sign out of your AgentFlow account</div>
+          </div>
           <button class="connect-btn" onclick="Auth.logout()">Log Out</button>
         </div>
       </div>
-    </div>
+</div>
   </main>
 </div>
-
 
 <script src="/js/api.js"></script>
 <script>
@@ -1111,84 +1030,6 @@ function copyText(text, btn, origLabel) {
   });
 }
 
-// ---- CHANNEL SELECTOR ----
-let currentChannel = 'email';
-
-function selectChannel(ch) {
-  currentChannel = ch;
-  ['email','whatsapp','both'].forEach(c => {
-    document.getElementById('ch-'+c).classList.toggle('active', c === ch);
-  });
-  const waRow = document.getElementById('waNumberRow');
-  const waLabel = document.getElementById('waNumberLabel');
-  if (ch === 'whatsapp') {
-    waRow.classList.add('visible');
-    if (waLabel) waLabel.textContent = 'Your WhatsApp Business Number (with country code)';
-  } else if (ch === 'both') {
-    waRow.classList.add('visible');
-    if (waLabel) waLabel.textContent = 'Your WhatsApp Business Number — leads get Email + WhatsApp follow-up';
-  } else {
-    waRow.classList.remove('visible');
-  }
-  // Update badge immediately
-  updateChannelBadge(ch);
-}
-
-async function saveChannel() {
-  try {
-    const waNumber = document.getElementById('waNumber')?.value?.trim() || '';
-
-  // FIX: Validate WhatsApp number required when channel is whatsapp or both
-   if ((currentChannel === 'whatsapp' || currentChannel === 'both') && !waNumber) {
-  showToast('Please connect your WhatsApp via the Connect button below', 'error');
-  return;
-  }
-
-    // Save channel preference
-    await Channel.set(currentChannel);
-
-    // Save WhatsApp number if provided
-    if (waNumber) {
-      await User.updateProfile({ whatsapp_number: waNumber });
-    }
-
-    // Keep local user object in sync so page reflects change immediately
-    const u = Auth.getUser();
-    if (u) {
-      u.follow_up_channel = currentChannel;
-      if (waNumber) u.whatsapp_number = waNumber;
-      localStorage.setItem('af_user', JSON.stringify(u));
-    }
-
-    updateChannelBadge(currentChannel);
-    showToast('Follow-up channel saved!', 'success');
-  } catch(e) {
-    showToast('Failed to save: ' + e.message, 'error');
-  }
-}
-
-function updateChannelBadge(ch) {
-  const icon = document.getElementById('channelIcon');
-  const label = document.getElementById('channelLabel');
-  if (!icon || !label) return;
-  const map = {
-    email: { icon: '📧', label: 'Following up via Email' },
-    whatsapp: { icon: '💬', label: 'Following up via WhatsApp' },
-    both: { icon: '⚡', label: 'Following up via Email + WhatsApp' }
-  };
-  icon.textContent = map[ch].icon;
-  label.textContent = map[ch].label;
-}
-
-// Init channel from user profile
-const savedChannel = user.follow_up_channel || 'email';
-selectChannel(savedChannel);
-if (user.whatsapp_number && document.getElementById('waNumber')) {
-  document.getElementById('waNumber').value = user.whatsapp_number;
-}
-updateChannelBadge(savedChannel);
-
-
 // ---- PROFILE PAGE ----
 function initProfilePage() {
   const profileUrl = `${window.location.origin}/pages/profile.html?agent=${Auth.getUser()?.id || ''}`;
@@ -1462,21 +1303,13 @@ async function loadSettings() {
     }
     // Follow-up channel — FIX: use real button IDs (ch-email/ch-whatsapp/ch-both)
     // followupChannel and agentWhatsapp IDs don't exist in HTML
-    if (u.follow_up_channel) {
-      selectChannel(u.follow_up_channel);
-    }
-    // WhatsApp number — FIX: use real input id="waNumber"
-    if (u.whatsapp_number) {
-      const waEl = document.getElementById('waNumber');
-      if (waEl) waEl.value = u.whatsapp_number;
-    }
+
   } catch(e) { /* silent */ }
 }
 // ---- META WHATSAPP CONNECT ----
 async function connectWhatsApp() {
-  const btn = document.getElementById('connectMetaBtn');
-  btn.innerHTML = '<span class="spinner"></span>Connecting...';
-  btn.disabled = true;
+  const btn = document.getElementById('waStatusBadge');
+  if (btn) { btn.textContent = 'Connecting…'; btn.disabled = true; }
 
   try {
     const data = await apiFetch('/whatsapp/meta/embedded-signup');
@@ -1489,16 +1322,17 @@ async function connectWhatsApp() {
     showToast('Meta WhatsApp API approval pending. We\'ll notify you when ready!', 'gold');
   }
 
-  btn.innerHTML = '🔗 Connect WhatsApp via Meta';
-  btn.disabled = false;
+  if (btn) { btn.textContent = 'Connect WhatsApp'; btn.disabled = false; }
 }
 
 async function disconnectWhatsApp() {
   if (!confirm('Disconnect WhatsApp? Lead capture and auto-reply will stop.')) return;
   try {
     await apiFetch('/whatsapp/meta/disconnect', { method: 'POST' });
-    document.getElementById('metaConnected').style.display = 'none';
-    document.getElementById('metaNotConnected').style.display = 'block';
+    const badge = document.getElementById('waStatusBadge');
+if (badge) { badge.textContent = 'Connect WhatsApp'; badge.className = 'connect-btn'; badge.disabled = false; }
+const label = document.getElementById('waStatusLabel');
+if (label) label.textContent = 'Auto-creates leads when someone messages you on WhatsApp (UAE agents)';
     showToast('WhatsApp disconnected', 'gold');
     const u = Auth.getUser();
     if (u) { u.meta_connected = false; localStorage.setItem('af_user', JSON.stringify(u)); }
