@@ -533,7 +533,7 @@ How long does buying take? | Typically 2-4 months from offer to completion.</tex
               <span id="waStatusLabel">Auto-creates leads when someone messages you on WhatsApp (UAE agents)</span>
             </div>
           </div>
-          <span id="waStatusBadge" class="wa-status-badge not-configured">⚠ Not configured</span>
+        <button id="waStatusBadge" class="wa-status-badge not-configured" onclick="selectChannel('whatsapp');document.getElementById('metaConnectionBox').scrollIntoView({behavior:'smooth'})">Set Up WhatsApp</button>
         </div>
 
         <!-- WhatsApp setup instructions (shown when not configured) -->
@@ -545,10 +545,11 @@ How long does buying take? | Typically 2-4 months from offer to completion.</tex
   </div>
     </div>
       </div>
+      </div>
       <div class="settings-section">
         <h3>Billing</h3>
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
-          <div><div style="color:var(--white);font-weight:600;margin-bottom:4px;" id="billingStatus">Free Trial — <span id="billingDaysLeft">14</span> days remaining</div><div style="color:var(--text-dim);font-size:0.85rem;">After trial, $49/month. Cancel anytime. Powered by Dodo Payments.</div></div>
+          <div><div style="color:var(--white);font-weight:600;margin-bottom:4px;" id="billingStatus">Free Trial — <span id="billingDaysLeft">14</span> days remaining</div><div style="color:var(--text-dim);font-size:0.85rem;">After trial, $49/month. Cancel anytime.</div></div>
           <button class="btn-primary" style="padding:11px 28px;" onclick="upgradeNow()">Upgrade to Pro — $49/mo</button>
         </div>
       </div>
@@ -1524,7 +1525,7 @@ async function checkMetaStatus() {
     } else {
       if (document.getElementById('metaConnected')) document.getElementById('metaConnected').style.display = 'none';
       if (document.getElementById('metaNotConnected')) document.getElementById('metaNotConnected').style.display = 'block';
-      if (badge) { badge.textContent = '⚠ Not connected'; badge.className = 'wa-status-badge not-configured'; }
+if (badge) { badge.textContent = 'Set Up WhatsApp'; badge.className = 'wa-status-badge not-configured'; }
     }
   } catch(e) { /* silent */ }
 }

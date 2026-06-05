@@ -878,9 +878,15 @@ img { max-width: 100%; display: block; }
   font-weight: 600;
 }
 .wa-status-badge.not-configured {
-  background: rgba(239,68,68,0.08);
-  border-color: rgba(239,68,68,0.2);
-  color: var(--red);
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.wa-status-badge.not-configured:hover {
+  border-color: rgba(201,168,76,0.3);
+  color: var(--gold);
 }
 
 /* ---- MOBILE RESPONSIVE ---- */
