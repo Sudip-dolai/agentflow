@@ -8,7 +8,7 @@ const express = require('express');
 const router = express.Router();
 const { authMiddleware } = require('../middleware/auth');
 const { users, leads, updateUser, createLead, getUserById } = require('../config/db');
-const { sendEmail, leadFollowupEmail } = require('../config/email');
+const { sendEmail, sendEmailViaGmail, leadFollowupEmail } = require('../config/email');
 const { sendWhatsApp, templates } = require('../config/whatsapp');
 const { v4: uuidv4 } = require('uuid');
 
@@ -40,7 +40,8 @@ router.get('/connect', authMiddleware, (req, res) => {
     prompt: 'consent',
     scope: [
       'https://www.googleapis.com/auth/gmail.readonly',
-      'https://www.googleapis.com/auth/gmail.modify'
+      'https://www.googleapis.com/auth/gmail.modify',
+        'https://www.googleapis.com/auth/gmail.send'
     ],
     state: JSON.stringify({ userId: req.userId, source: 'gmail' })
   });
@@ -143,15 +144,16 @@ async function scanGmailForLeads(userId, user) {
 
   // Search for unread enquiry emails from portals
   // Rightmove and Zoopla both have distinctive sender patterns
-  const query = [
-    'is:unread',
-    '(',
-    'from:rightmove.co.uk OR from:zoopla.co.uk OR',
-    'subject:"enquiry" OR subject:"viewing request" OR',
-    'subject:"property enquiry" OR subject:"new enquiry"',
-    ')'
-  ].join(' ');
-
+ const query = [
+  'is:unread',
+  '(',
+  'from:rightmove.co.uk OR from:zoopla.co.uk OR',
+  'from:bayut.com OR from:propertyfinder.ae OR',
+  'subject:"enquiry" OR subject:"viewing request" OR',
+  'subject:"property enquiry" OR subject:"new enquiry" OR',
+  'subject:"bayut" OR subject:"property finder"',
+  ')'
+].join(' ');
   const listRes = await gmail.users.messages.list({
     userId: 'me',
     q: query,
@@ -208,13 +210,20 @@ async function scanGmailForLeads(userId, user) {
      const channel = (user.gmail_connected && user.whatsapp_connected) ? 'both' : user.whatsapp_connected ? 'whatsapp' : 'email';
 
       if ((channel === 'email' || channel === 'both') && lead.email) {
-        sendEmail({
-          to: lead.email,
-          subject: `Thanks for your enquiry — I'll be in touch shortly`,
-          html: leadFollowupEmail(user.name, user.agency, bookingUrl)
-        }).catch(err => console.error('[GMAIL] Email follow-up failed:', err.message));
-      }
+  const sendFn = (user.gmail_connected && user.gmail_tokens)
+    ? sendEmailViaGmail(user.gmail_tokens, {
+        to: lead.email,
+        subject: `Thanks for your enquiry — I'll be in touch shortly`,
+        html: leadFollowupEmail(user.name, user.agency, bookingUrl)
+      })
+    : sendEmail({
+        to: lead.email,
+        subject: `Thanks for your enquiry — I'll be in touch shortly`,
+        html: leadFollowupEmail(user.name, user.agency, bookingUrl)
+      });
 
+  sendFn.catch(err => console.error('[GMAIL] Email follow-up failed:', err.message));
+}
       if ((channel === 'whatsapp' || channel === 'both') && lead.phone) {
         sendWhatsApp(lead.phone, templates.welcome(user.name, user.agency, bookingUrl))
           .catch(err => console.error('[GMAIL] WhatsApp follow-up failed:', err.message));
@@ -251,8 +260,10 @@ function parseEnquiryEmail(message) {
 
     // Determine source
     let source = 'email';
-    if (from.includes('rightmove') || subject.toLowerCase().includes('rightmove')) source = 'rightmove';
-    else if (from.includes('zoopla') || subject.toLowerCase().includes('zoopla')) source = 'zoopla';
+if (from.includes('bayut') || subject.toLowerCase().includes('bayut')) source = 'bayut';
+else if (from.includes('propertyfinder') || subject.toLowerCase().includes('property finder')) source = 'propertyfinder';
+else if (from.includes('rightmove') || subject.toLowerCase().includes('rightmove')) source = 'rightmove';
+else if (from.includes('zoopla') || subject.toLowerCase().includes('zoopla')) source = 'zoopla';
 
     // ---- RIGHTMOVE EMAIL FORMAT ----
     // "You have received an enquiry from: John Smith"
@@ -306,7 +317,7 @@ function parseEnquiryEmail(message) {
     for (const p of emailPatterns) {
       const m = body.match(p);
       // Skip portal's own email
-      if (m && !m[1].includes('rightmove') && !m[1].includes('zoopla') && !m[1].includes('noreply')) {
+     if (m && !m[1].includes('rightmove') && !m[1].includes('zoopla') && !m[1].includes('bayut') && !m[1].includes('propertyfinder') && !m[1].includes('noreply')) {
         email = m[1].trim();
         break;
       }
@@ -337,10 +348,6 @@ function parseEnquiryEmail(message) {
 
     // Must have at least a name to create a lead
     if (!name || name.length < 2) return null;
-
-    // Must have email or phone
-    if (!email && !phone) return null;
-
     return { name, email, phone, source, property, notes };
 
   } catch (err) {

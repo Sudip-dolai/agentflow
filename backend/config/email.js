@@ -72,4 +72,40 @@ function leadFollowupEmail(agentName, agencyName, bookingUrl) {
   </div>`;
 }
 
-module.exports = { sendEmail, welcomeEmail, leadFollowupEmail };
+// Send email via agent's connected Gmail OAuth tokens
+async function sendEmailViaGmail(gmailTokens, { to, subject, html }) {
+  const { google } = require('googleapis');
+  
+  const oauth2Client = new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    process.env.GOOGLE_REDIRECT_URI_GMAIL
+  );
+  
+  oauth2Client.setCredentials(gmailTokens);
+  const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
+
+  const emailLines = [
+    `To: ${to}`,
+    `Subject: ${subject}`,
+    `MIME-Version: 1.0`,
+    `Content-Type: text/html; charset=utf-8`,
+    ``,
+    html
+  ];
+  
+  const raw = Buffer.from(emailLines.join('\n'))
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+
+  await gmail.users.messages.send({
+    userId: 'me',
+    requestBody: { raw }
+  });
+
+  console.log(`[GMAIL] Sent via agent Gmail: ${subject} → ${to}`);
+}
+module.exports = { sendEmail, sendEmailViaGmail, welcomeEmail, leadFollowupEmail };
+

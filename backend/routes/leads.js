@@ -8,7 +8,7 @@ const router  = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const { authMiddleware } = require('../middleware/auth');
 const { leads, getUserById, createLead, getLeadsByUser, updateLead, deleteLead, getLeadById } = require('../config/db');
-const { sendEmail, leadFollowupEmail } = require('../config/email');
+const { sendEmail, sendEmailViaGmail, leadFollowupEmail } = require('../config/email');
 const { sendWhatsApp, templates } = require('../config/whatsapp');
 
 
@@ -30,16 +30,22 @@ const channel = (user.gmail_connected && user.whatsapp_connected) ? 'both' : use
     );
   }
 
-  // 2. Email TO LEAD
-  if ((channel === 'email' || channel === 'both' || (!lead.phone && channel !== 'whatsapp')) && lead.email) {
-    promises.push(
-      sendEmail({
-        to:      lead.email,
+ // 2. Email TO LEAD (via agent Gmail if connected, else Resend)
+if ((channel === 'email' || channel === 'both' || (!lead.phone && channel !== 'whatsapp')) && lead.email) {
+  const sendFn = (user.gmail_connected && user.gmail_tokens)
+    ? sendEmailViaGmail(user.gmail_tokens, {
+        to: lead.email,
         subject: `Thanks for your enquiry — I'll be in touch shortly`,
-        html:    leadFollowupEmail(user.name, user.agency, bookingUrl)
-      }).catch(err => console.error('[LEAD] Email to lead failed:', err.message))
-    );
-  }
+        html: leadFollowupEmail(user.name, user.agency, bookingUrl)
+      })
+    : sendEmail({
+        to: lead.email,
+        subject: `Thanks for your enquiry — I'll be in touch shortly`,
+        html: leadFollowupEmail(user.name, user.agency, bookingUrl)
+      });
+
+  promises.push(sendFn.catch(err => console.error('[LEAD] Email to lead failed:', err.message)));
+}
 
   // 3. Notify AGENT by email
   if (user.email) {
@@ -240,11 +246,19 @@ function scheduleFollowups(leadId, leadData, userId) {
             3: `Ready to schedule a viewing? Pick a time that works for you`,
             7: `Still looking? Let me know how I can help`
           };
-          await sendEmail({
-            to:      lead.email,
-            subject: subjects[day],
-            html:    leadFollowupEmail(user.name, user.agency, bookingUrl)
-          });
+          if (user.gmail_connected && user.gmail_tokens) {
+  await sendEmailViaGmail(user.gmail_tokens, {
+    to: lead.email,
+    subject: subjects[day],
+    html: leadFollowupEmail(user.name, user.agency, bookingUrl)
+  });
+} else {
+  await sendEmail({
+    to: lead.email,
+    subject: subjects[day],
+    html: leadFollowupEmail(user.name, user.agency, bookingUrl)
+  });
+}
           console.log(`[FOLLOWUP] Day ${day} email sent to ${lead.email}`);
         }
 
