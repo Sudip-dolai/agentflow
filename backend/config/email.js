@@ -2,26 +2,17 @@
 // AGENTFLOW — Email Config (Nodemailer)
 // ============================================
 
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || 'smtp.resend.com',
-  port: parseInt(process.env.EMAIL_PORT) || 465,
-  secure: true,  // ← change this
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
 async function sendEmail({ to, subject, html, text }) {
-  // Skip if email not configured
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+  if (!process.env.RESEND_API_KEY) {
     console.log(`[EMAIL] Skipped (not configured): ${subject} → ${to}`);
     return { skipped: true };
   }
   try {
-    const result = await transporter.sendMail({
-      from: process.env.EMAIL_FROM || 'AgentFlow <noreply@theagentflow.co>',
+    const result = await resend.emails.send({
+      from: process.env.EMAIL_FROM || 'AgentFlow <hello@getagentflow.co>',
       to, subject, html, text
     });
     console.log(`[EMAIL] Sent: ${subject} → ${to}`);
@@ -31,7 +22,6 @@ async function sendEmail({ to, subject, html, text }) {
     throw err;
   }
 }
-
 // Welcome email template
 function welcomeEmail(name) {
   return `
