@@ -101,9 +101,13 @@ router.post('/', authMiddleware, async (req, res) => {
       followup_stage: 0,
       created_at:     new Date().toISOString()
     };
+await createLead(leadId, leadData);
 
-    await createLead(leadId, leadData);
-   scheduleFollowups(leadId, leadData, agentId); 
+try {
+  scheduleFollowups(leadId, leadData, req.userId);
+} catch(err) {
+  console.error('[LEAD] Schedule error:', err.message);
+}
 
     // Fire instant follow-up — await getUserById (async — reads Supabase)
     const user = await getUserById(req.userId);
