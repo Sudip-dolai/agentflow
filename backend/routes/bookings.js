@@ -147,6 +147,18 @@ router.post('/book', async (req, res) => {
     });
 
     const agent = await getUserById(agent_id);
+    if (agent?.calendar_connected && agent?.google_tokens) {
+  googleCalendar.createCalendarEvent(agent.google_tokens, {
+    client_name, property, date, time,
+    client_email, client_phone, message
+  }, agent.calendar_timezone || 'Asia/Dubai')
+  .then(event => {
+    if (event?.id) {
+      updateBooking(bookingId, { google_event_id: event.id }).catch(console.error);
+    }
+  })
+  .catch(err => console.error('[BOOKING] Calendar event failed:', err.message));
+}
     const formattedDateTime = new Date(`${date}T${time}:00`).toLocaleDateString('en-GB', {
       weekday:'long', day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit'
     });
