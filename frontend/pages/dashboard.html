@@ -1166,6 +1166,7 @@ async function checkCalendarStatus() {
   if (intBtn && data?.connected) {
     intBtn.textContent = '✓ Connected';
     intBtn.classList.add('connected');
+     intBtn.onclick = null; 
   }
   return;
 }
