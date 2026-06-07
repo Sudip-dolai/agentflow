@@ -39,6 +39,7 @@ if ((channel === 'email' || channel === 'both' || (!lead.phone && channel !== 'w
     html: leadFollowupEmail(user.name, user.agency, bookingUrl)
   }).catch(err => console.error('[LEAD] Email to lead failed:', err.message))
 );
+}
 
   // 3. Notify AGENT by email
   if (user.email) {
