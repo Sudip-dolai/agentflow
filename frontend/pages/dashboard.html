@@ -1181,6 +1181,7 @@ async function checkCalendarStatus() {
     if (data.connected) {
       btn.textContent = '✓ Connected';
       btn.classList.add('connected');
+        btn.onclick = null;
       if (status) status.innerHTML = '<span style="color:var(--green);">✓ Google Calendar synced · Slots auto-blocked</span>';
     } else {
       btn.textContent = 'Connect Google Calendar';
@@ -1193,6 +1194,7 @@ async function checkCalendarStatus() {
       if (data.connected) {
         intBtn.textContent = '✓ Connected';
         intBtn.classList.add('connected');
+         intBtn.onclick = null;
       } else {
         intBtn.textContent = 'Connect';
         intBtn.classList.remove('connected');
