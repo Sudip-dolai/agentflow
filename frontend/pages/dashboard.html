@@ -659,6 +659,8 @@ function showPanel(name) {
   if (name === 'booking') { checkCalendarStatus(); loadAvailability(); initBookingLink(); }
   if (name === 'leads')   loadLeads();
   if (name === 'chatbot') loadChatbotConfig();
+  if (name === 'settings') { checkCalendarStatus(); checkGmailStatus(); checkWhatsAppStatus(); loadSettings(); }
+  
 }
 
 function initBookingLink() {
@@ -1209,6 +1211,17 @@ async function disconnectGoogleCalendar() {
   } catch(e) {
     showToast('Failed to disconnect', 'error');
   }
+  // Also sync Settings panel calendar button
+const intBtn = document.getElementById('int-calendar');
+if (intBtn) {
+  if (data.connected) {
+    intBtn.textContent = '✓ Connected';
+    intBtn.classList.add('connected');
+  } else {
+    intBtn.textContent = 'Connect';
+    intBtn.classList.remove('connected');
+  }
+}
 }
 
 // ---- GMAIL CONNECT ----

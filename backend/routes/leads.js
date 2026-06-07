@@ -255,5 +255,4 @@ function scheduleFollowups(leadId, leadData, userId) {
     }, ms);
   });
 }
-
 module.exports = router;
