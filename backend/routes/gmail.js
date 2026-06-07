@@ -8,7 +8,7 @@ const express = require('express');
 const router = express.Router();
 const { authMiddleware } = require('../middleware/auth');
 const { users, leads, updateUser, createLead, getUserById } = require('../config/db');
-const { sendEmail, sendEmailViaGmail, leadFollowupEmail } = require('../config/email');
+const { sendEmail, leadFollowupEmail } = require('../config/email');
 const { sendWhatsApp, templates } = require('../config/whatsapp');
 const { v4: uuidv4 } = require('uuid');
 
@@ -38,11 +38,9 @@ router.get('/connect', authMiddleware, (req, res) => {
   const authUrl = oauth2Client.generateAuthUrl({
     access_type: 'offline',
     prompt: 'consent',
-    scope: [
-      'https://www.googleapis.com/auth/gmail.readonly',
-      'https://www.googleapis.com/auth/gmail.modify',
-        'https://www.googleapis.com/auth/gmail.send'
-    ],
+   scope: [
+  'https://www.googleapis.com/auth/gmail.readonly'
+],
     state: JSON.stringify({ userId: req.userId, source: 'gmail' })
   });
 
@@ -208,21 +206,12 @@ async function scanGmailForLeads(userId, user) {
       // Fire instant follow-up
       const bookingUrl = `${process.env.FRONTEND_URL || 'https://theagentflow.co'}/pages/book.html?agent=${userId}`;
      const channel = (user.gmail_connected && user.whatsapp_connected) ? 'both' : user.whatsapp_connected ? 'whatsapp' : 'email';
-
-      if ((channel === 'email' || channel === 'both') && lead.email) {
-  const sendFn = (user.gmail_connected && user.gmail_tokens)
-    ? sendEmailViaGmail(user.gmail_tokens, {
-        to: lead.email,
-        subject: `Thanks for your enquiry — I'll be in touch shortly`,
-        html: leadFollowupEmail(user.name, user.agency, bookingUrl)
-      })
-    : sendEmail({
-        to: lead.email,
-        subject: `Thanks for your enquiry — I'll be in touch shortly`,
-        html: leadFollowupEmail(user.name, user.agency, bookingUrl)
-      });
-
-  sendFn.catch(err => console.error('[GMAIL] Email follow-up failed:', err.message));
+if ((channel === 'email' || channel === 'both') && lead.email) {
+  sendEmail({
+    to: lead.email,
+    subject: `Thanks for your enquiry — I'll be in touch shortly`,
+    html: leadFollowupEmail(user.name, user.agency, bookingUrl)
+  }).catch(err => console.error('[GMAIL] Email follow-up failed:', err.message));
 }
       if ((channel === 'whatsapp' || channel === 'both') && lead.phone) {
         sendWhatsApp(lead.phone, templates.welcome(user.name, user.agency, bookingUrl))
@@ -230,12 +219,8 @@ async function scanGmailForLeads(userId, user) {
       }
 
       // Mark email as read so we don't process it again
-      await gmail.users.messages.modify({
-        userId: 'me',
-        id: msg.id,
-        requestBody: { removeLabelIds: ['UNREAD'] }
-      }).catch(console.error);
-
+     // Skipping mark-as-read to avoid gmail.modify scope requirement
+// Duplicate detection is handled via gmail_message_id in database
     } catch (err) {
       console.error(`[GMAIL] Error processing message ${msg.id}:`, err.message);
     }
