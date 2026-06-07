@@ -67,7 +67,7 @@ app.use('/api/whatsapp', require('./routes/whatsapp'));
 app.use('/api/profile',  require('./routes/profile'));
 // Calendar: /slots/:userId is PUBLIC (called by book.html), rest is gated inside the router
 app.use("/api/calendar", require("./routes/calendar"));
-app.use('/api/gmail',    ...gated, require('./routes/gmail'));
+app.use('/api/gmail', require('./routes/gmail'));
 
 // ---- HEALTH CHECK ----
 app.get('/api/health', (req, res) => {
