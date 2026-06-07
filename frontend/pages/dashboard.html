@@ -1179,10 +1179,22 @@ async function checkCalendarStatus() {
       btn.classList.remove('connected');
       if (status) status.textContent = 'Not connected — slots use manual availability only';
     }
+    // Also sync Settings panel calendar button
+    const intBtn = document.getElementById('int-calendar');
+    if (intBtn) {
+      if (data.connected) {
+        intBtn.textContent = '✓ Connected';
+        intBtn.classList.add('connected');
+      } else {
+        intBtn.textContent = 'Connect';
+        intBtn.classList.remove('connected');
+      }
+    }
   } catch(e) {
     const status = document.getElementById('calStatus');
     if (status) status.textContent = 'Could not check status';
   }
+  
 }
 
 async function connectGoogleCalendar() {
@@ -1211,17 +1223,7 @@ async function disconnectGoogleCalendar() {
   } catch(e) {
     showToast('Failed to disconnect', 'error');
   }
-  // Also sync Settings panel calendar button
-const intBtn = document.getElementById('int-calendar');
-if (intBtn) {
-  if (data.connected) {
-    intBtn.textContent = '✓ Connected';
-    intBtn.classList.add('connected');
-  } else {
-    intBtn.textContent = 'Connect';
-    intBtn.classList.remove('connected');
-  }
-}
+  
 }
 
 // ---- GMAIL CONNECT ----
