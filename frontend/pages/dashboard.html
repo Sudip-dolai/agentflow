@@ -1161,7 +1161,14 @@ async function checkCalendarStatus() {
     const btn = document.getElementById('calConnectBtn');
     const status = document.getElementById('calStatus');
     const notConfigured = document.getElementById('calNotConfigured');
-    if (!btn) return;
+    if (!btn) {
+  const intBtn = document.getElementById('int-calendar');
+  if (intBtn && data?.connected) {
+    intBtn.textContent = '✓ Connected';
+    intBtn.classList.add('connected');
+  }
+  return;
+}
 
     if (!data.google_configured) {
       if (notConfigured) notConfigured.style.display = 'block';
