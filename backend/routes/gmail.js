@@ -172,16 +172,28 @@ async function scanGmailForLeads(userId, user) {
       const lead = parseEnquiryEmail(fullMsg.data);
       if (!lead) continue;
 
-      // Check if we already captured this lead (avoid duplicates via gmail_message_id)
-      let alreadyExists = false;
-      for (const [, existingLead] of leads) {
-        if (existingLead.userId === userId && existingLead.gmail_message_id === msg.id) {
-          alreadyExists = true;
-          break;
-        }
-      }
-      if (alreadyExists) continue;
-
+     // Check if we already captured this lead (avoid duplicates via gmail_message_id)
+let alreadyExists = false;
+const { supabase } = require('../config/db');
+if (supabase) {
+  const { data } = await supabase
+    .from('leads')
+    .select('id')
+    .eq('gmail_message_id', msg.id)
+    .eq('user_id', userId)
+    .maybeSingle()
+    .catch(() => ({ data: null }));
+  alreadyExists = !!data;
+} else {
+  // fallback: in-memory check (dev mode)
+  for (const [, existingLead] of leads) {
+    if (existingLead.userId === userId && existingLead.gmail_message_id === msg.id) {
+      alreadyExists = true;
+      break;
+    }
+  }
+}
+if (alreadyExists) continue;
       // Create the lead
       const leadId = uuidv4();
       const leadData = {
