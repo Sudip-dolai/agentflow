@@ -51,10 +51,7 @@ const { authMiddleware, planGate } = require('./middleware/auth');
 const gated = [authMiddleware, planGate];
 
 app.use('/api/listings', ...gated, require('./routes/listings'));
-// Public lead capture (chatbot) — no auth needed
-app.use('/api/leads/capture', require('./routes/leads'));
-// Private lead management — auth required
-app.use('/api/leads', ...gated, require('./routes/leads'));
+app.use('/api/leads', require('./routes/leads'));
 app.use('/api/chatbot',  ...gated, require('./routes/chatbot'));
 app.use('/api/reports',  ...gated, require('./routes/reports'));
 app.use('/api/user',     ...gated, require('./routes/user'));
