@@ -9,7 +9,7 @@
   const agentId = script?.getAttribute('data-agent');
   if (!agentId) return;
 
-  const API = 'https://theagentflow.co/api';
+  const API = 'https://getagentflow.co/api';
   let agentData = null;
   let chatStage = 'welcome';
   let leadData = {};
