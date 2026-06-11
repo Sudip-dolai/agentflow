@@ -448,10 +448,10 @@ function processMessage(text) {
         addBotMessage(`No problem! ${agentData?.name || 'The agent'} will send you listings shortly. Feel free to message anytime! 😊`);
       }
       chatStage = 'end';
-      setTimeout(() => {
-        addBot('Is there anything else I can help you with?');
-        showOpts(['Ask another question', 'Close chat']);
-      }, 1000);
+setTimeout(() => {
+  addBotMessage('Is there anything else I can help you with?');
+  showOptions(['Ask another question', 'Close chat']);
+}, 1000);
     }
   }, 600);
 }
