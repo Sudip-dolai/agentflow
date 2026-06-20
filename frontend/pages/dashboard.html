@@ -870,8 +870,9 @@ async function updateLead(id) {
 function showAddLeadModal() {
   const name = prompt('Lead name:');
   if (!name) return;
+  const phone = prompt('Lead WhatsApp number (with country code, e.g. +971501234567):');
   const email = prompt('Lead email (optional):');
-  Leads.add({ name, email, source: 'manual' })
+  Leads.add({ name, phone, email, source: 'manual' })
     .then(() => { showToast('Lead added!', 'success'); loadLeads(); })
     .catch(e => showToast(e.message, 'error'));
 }
