@@ -14,7 +14,7 @@ const { sendWhatsApp, templates } = require('../config/whatsapp');
 
 // ---- HELPER: fire instant follow-up ----
 async function fireInstantFollowup(lead, user) {
-const channel = (user.gmail_connected && user.whatsapp_connected) ? 'both' : user.whatsapp_connected ? 'whatsapp' : 'email';
+const channel = lead.phone && lead.email ? 'both' : lead.phone ? 'whatsapp' : 'email';
   const bookingUrl = `${process.env.FRONTEND_URL || 'https://theagentflow.co'}/pages/book.html?agent=${user.id || lead.userId}`;
   const sourceLabel = lead.source
     ? lead.source.charAt(0).toUpperCase() + lead.source.slice(1)
