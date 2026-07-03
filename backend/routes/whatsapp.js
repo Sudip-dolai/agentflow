@@ -105,43 +105,67 @@ router.get('/meta/status', async (req, res) => {
 });
 
 // ============================================
-// POST /api/whatsapp/meta/embedded-signup
-// Generate Meta Embedded Signup URL for agent
+// POST /api/whatsapp/meta/embedded-signup-callback
+// Handle code from FB.login() JS SDK popup flow
 // ============================================
-router.post('/meta/embedded-signup', async (req, res) => {
+router.post('/meta/embedded-signup-callback', async (req, res) => {
   try {
-    const appId = process.env.META_APP_ID;
-    if (!appId) {
-      return res.status(503).json({
-        error: 'Meta App not configured',
-        message: 'Add META_APP_ID to your .env file'
-      });
-    }
-
-    // Get user from auth header
     const authHeader = req.headers.authorization;
-    if (!authHeader) return res.status(401).json({ error: 'Unauthorized' });
+    if (!authHeader) return res.status(401).json({ success: false, error: 'Unauthorized' });
 
     const token = authHeader.replace('Bearer ', '');
     const jwt = require('jsonwebtoken');
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.userId || decoded.id;
 
-    // Build Meta Embedded Signup URL
-    const redirectUri = `${process.env.FRONTEND_URL || 'https://getagentflow.co'}/api/whatsapp/meta/callback`;
-    const state = Buffer.from(JSON.stringify({ userId })).toString('base64');
+    const { code, phone_number_id, waba_id } = req.body;
+    if (!code) return res.status(400).json({ success: false, error: 'Missing authorization code' });
 
-    const signupUrl = `https://www.facebook.com/dialog/oauth?` +
-      `client_id=${appId}` +
-      `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-      `&scope=whatsapp_business_management,whatsapp_business_messaging,business_management` +
-      `&response_type=code` +
-      `&state=${encodeURIComponent(state)}`;
+    // Exchange code for access token
+    const tokenResponse = await fetch(
+      `https://graph.facebook.com/v21.0/oauth/access_token?` +
+      `client_id=${process.env.META_APP_ID}&client_secret=${process.env.META_APP_SECRET}&code=${code}`
+    );
+    const tokenData = await tokenResponse.json();
+    if (!tokenData.access_token) throw new Error(tokenData.error?.message || 'No access token received');
 
-    res.json({ url: signupUrl });
+    const accessToken = tokenData.access_token;
+    let phoneNumberId = phone_number_id || null;
+    let wabaId = waba_id || null;
+    let phoneNumber = null;
+
+    // Fetch display phone number if we have a phone_number_id
+    if (phoneNumberId) {
+      const phoneRes = await fetch(
+        `https://graph.facebook.com/v21.0/${phoneNumberId}?fields=display_phone_number&access_token=${accessToken}`
+      );
+      const phoneData = await phoneRes.json();
+      phoneNumber = phoneData.display_phone_number || null;
+    }
+
+    await updateUser(userId, {
+      meta_access_token: accessToken,
+      meta_waba_id: wabaId || '',
+      meta_phone_number_id: phoneNumberId || '',
+      meta_connected: true,
+      meta_connected_at: new Date().toISOString(),
+      whatsapp_number: phoneNumber || ''
+    });
+
+    console.log(`[META EMBEDDED SIGNUP] ✅ Agent ${userId} connected WhatsApp: ${phoneNumber || phoneNumberId}`);
+
+    // Subscribe webhook for this agent's number
+    if (phoneNumberId) {
+      await fetch(`https://graph.facebook.com/v21.0/${phoneNumberId}/subscribed_apps`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}` }
+      }).catch(err => console.error('[META] Webhook subscribe failed:', err.message));
+    }
+
+    res.json({ success: true, phone_number: phoneNumber });
   } catch (err) {
-    console.error('[META SIGNUP] Error:', err.message);
-    res.status(500).json({ error: 'Failed to generate signup URL' });
+    console.error('[META EMBEDDED SIGNUP CALLBACK] Error:', err.message);
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
