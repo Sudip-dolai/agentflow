@@ -454,7 +454,7 @@ How long does buying take? | Typically 2-4 months from offer to completion.</tex
               <span id="waStatusLabel">Automated WhatsApp follow-ups are active — add your leads and we handle the rest</span>
             </div>
           </div>
-          <button id="waStatusBadge" class="connect-btn" disabled style="cursor:not-allowed;opacity:0.6;">✓ Active</button>
+         <button id="waStatusBadge" class="connect-btn" onclick="connectWhatsApp()">Connect WhatsApp</button>
         </div>
       </div>
 
@@ -1333,23 +1333,50 @@ async function loadSettings() {
   } catch(e) { /* silent */ }
 }
 // ---- META WHATSAPP CONNECT ----
-async function connectWhatsApp() {
+function connectWhatsApp() {
   const btn = document.getElementById('waStatusBadge');
   if (btn) { btn.textContent = 'Connecting…'; btn.disabled = true; }
 
-  try {
-    const data = await apiFetch('/whatsapp/meta/embedded-signup');
-    if (data.url) {
-      window.location.href = data.url;
+  FB.login(function(response) {
+    if (response.authResponse) {
+      const code = response.authResponse.code;
+      apiFetch('/whatsapp/meta/embedded-signup-callback', {
+        method: 'POST',
+        body: JSON.stringify({
+          code,
+          phone_number_id: window._waSignupData?.phone_number_id || '',
+          waba_id: window._waSignupData?.waba_id || ''
+        })
+      }).then(data => {
+        if (data.success) {
+          showToast('✅ WhatsApp connected!', 'success');
+          checkMetaStatus();
+        } else {
+          showToast('Connection failed: ' + (data.error || 'Unknown error'), 'error');
+        }
+      }).catch(e => showToast('Connection failed: ' + e.message, 'error'))
+      .finally(() => { if (btn) { btn.disabled = false; } });
     } else {
-      showToast('Meta API approval pending. Check back in 2-10 days.', 'gold');
+      showToast('WhatsApp connection cancelled', 'gold');
+      if (btn) { btn.textContent = 'Connect WhatsApp'; btn.disabled = false; }
     }
-  } catch(e) {
-    showToast('Meta WhatsApp API approval pending. We\'ll notify you when ready!', 'gold');
-  }
-
-  if (btn) { btn.textContent = 'Connect WhatsApp'; btn.disabled = false; }
+  }, {
+    config_id: '1320537920291432',
+    response_type: 'code',
+    override_default_response_type: true,
+    extras: { setup: {}, featureType: 'whatsapp_business_app_onboarding', sessionInfoVersion: '3' }
+  });
 }
+
+window.addEventListener('message', (event) => {
+  if (!event.origin.endsWith('facebook.com')) return;
+  try {
+    const data = JSON.parse(event.data);
+    if (data.type === 'WA_EMBEDDED_SIGNUP' && data.event === 'FINISH') {
+      window._waSignupData = data.data;
+    }
+  } catch (e) {}
+});
 
 async function disconnectWhatsApp() {
   if (!confirm('Disconnect WhatsApp? Lead capture and auto-reply will stop.')) return;
@@ -1374,17 +1401,11 @@ async function checkMetaStatus() {
     const label = document.getElementById('waStatusLabel');
 
     if (data.connected) {
-      document.getElementById('metaConnected').style.display = 'block';
-      document.getElementById('metaNotConnected').style.display = 'none';
-      if (document.getElementById('metaConnectedNumber')) {
-        document.getElementById('metaConnectedNumber').textContent = data.phone_number || '';
-      }
-      if (badge) { badge.textContent = '✓ Active'; badge.className = 'wa-status-badge'; }
+      if (badge) { badge.textContent = '✓ Connected'; badge.classList.add('connected'); }
       if (label) label.textContent = `Auto lead capture active — ${data.phone_number}`;
     } else {
-      if (document.getElementById('metaConnected')) document.getElementById('metaConnected').style.display = 'none';
-      if (document.getElementById('metaNotConnected')) document.getElementById('metaNotConnected').style.display = 'block';
-if (badge) { badge.textContent = 'Set Up WhatsApp'; badge.className = 'wa-status-badge not-configured'; }
+      if (badge) { badge.textContent = 'Connect WhatsApp'; badge.classList.remove('connected'); }
+      if (label) label.textContent = 'Connect your WhatsApp number to enable auto lead capture and follow-ups';
     }
   } catch(e) { /* silent */ }
 }
@@ -1394,5 +1415,17 @@ function showMetaStatus() {
 }
 
 </script>
+<div id="fb-root"></div>
+<script>
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId: '2048175242725422',
+      autoLogAppEvents: true,
+      xfbml: true,
+      version: 'v21.0'
+    });
+  };
+</script>
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
 </body>
 </html>
