@@ -9,7 +9,7 @@ const router = express.Router();
 const { authMiddleware } = require('../middleware/auth');
 const { users, leads, updateUser, createLead, getUserById } = require('../config/db');
 const { sendEmail, leadFollowupEmail } = require('../config/email');
-const { sendWhatsApp, templates } = require('../config/whatsapp');
+const { sendMetaWhatsApp, templates } = require('../config/whatsapp');
 const { v4: uuidv4 } = require('uuid');
 
 // ---- GMAIL OAUTH SETUP ----
@@ -226,7 +226,7 @@ if ((channel === 'email' || channel === 'both') && lead.email) {
   }).catch(err => console.error('[GMAIL] Email follow-up failed:', err.message));
 }
       if ((channel === 'whatsapp' || channel === 'both') && lead.phone) {
-        sendWhatsApp(lead.phone, templates.welcome(user.name, user.agency, bookingUrl))
+       sendMetaWhatsApp(user, lead.phone, templates.welcome(user.name, user.agency, bookingUrl))
           .catch(err => console.error('[GMAIL] WhatsApp follow-up failed:', err.message));
       }
 

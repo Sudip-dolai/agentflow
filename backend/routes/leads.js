@@ -9,13 +9,13 @@ const { v4: uuidv4 } = require('uuid');
 const { authMiddleware } = require('../middleware/auth');
 const { leads, getUserById, createLead, getLeadsByUser, updateLead, deleteLead, getLeadById } = require('../config/db');
 const { sendEmail, leadFollowupEmail } = require('../config/email');
-const { sendWhatsApp, templates } = require('../config/whatsapp');
+const {  sendMetaWhatsApp, templates } = require('../config/whatsapp');
 
 
 // ---- HELPER: fire instant follow-up ----
 async function fireInstantFollowup(lead, user) {
 const channel = lead.phone && lead.email ? 'both' : lead.phone ? 'whatsapp' : 'email';
-  const bookingUrl = `${process.env.FRONTEND_URL || 'https://theagentflow.co'}/pages/book.html?agent=${user.id || lead.userId}`;
+  const bookingUrl = `${process.env.FRONTEND_URL || 'https://getagentflow.co'}/pages/book.html?agent=${user.id || lead.userId}`;
   const sourceLabel = lead.source
     ? lead.source.charAt(0).toUpperCase() + lead.source.slice(1)
     : 'Website';
@@ -25,7 +25,7 @@ const channel = lead.phone && lead.email ? 'both' : lead.phone ? 'whatsapp' : 'e
   // 1. WhatsApp TO LEAD
   if ((channel === 'whatsapp' || channel === 'both') && lead.phone) {
     promises.push(
-      sendWhatsApp(lead.phone, templates.welcome(user.name, user.agency, bookingUrl))
+      sendMetaWhatsApp(user, lead.phone, templates.welcome(user.name, user.agency, bookingUrl))
         .catch(err => console.error('[LEAD] WA to lead failed:', err.message))
     );
   }
@@ -71,7 +71,7 @@ if ((channel === 'email' || channel === 'both' || (!lead.phone && channel !== 'w
   // 4. Notify AGENT by WhatsApp
   if (user.whatsapp_number) {
     promises.push(
-      sendWhatsApp(
+      sendMetaWhatsApp(
         user.whatsapp_number,
         `🔔 New lead!\n\nName: ${lead.name}\n${lead.email ? `Email: ${lead.email}\n` : ''}${lead.phone ? `Phone: ${lead.phone}\n` : ''}Source: ${sourceLabel}\n\n✅ Instant follow-up sent automatically.`
       ).catch(err => console.error('[LEAD] Agent WA notify failed:', err.message))

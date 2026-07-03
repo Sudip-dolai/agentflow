@@ -185,8 +185,8 @@ router.post('/book', async (req, res) => {
 
     // Send WhatsApp confirmation to client
     if (client_phone) {
-      const { sendWhatsApp } = require('../config/whatsapp');
-      sendWhatsApp(client_phone,
+      const {sendMetaWhatsApp } = require('../config/whatsapp');
+      sendMetaWhatsApp(agent, client_phone,
         `✅ Viewing confirmed!\n\nHi ${client_name}, your property viewing is confirmed:\n\n📅 ${formattedDateTime}\n🏠 ${property}\n👤 ${agent?.name || 'Your Agent'}\n\nWe'll send you a reminder the day before. See you then!`
       ).catch(console.error);
     }
@@ -212,8 +212,8 @@ router.post('/book', async (req, res) => {
 
     // Notify agent via WhatsApp
     if (agent?.whatsapp_number) {
-      const { sendWhatsApp } = require('../config/whatsapp');
-      sendWhatsApp(agent.whatsapp_number,
+      const { sendMetaWhatsApp } = require('../config/whatsapp');
+      sendMetaWhatsApp(agent,agent.whatsapp_number,
         `📅 New viewing booked!\n\nClient: ${client_name}\nPhone: ${client_phone || 'not provided'}\nProperty: ${property}\nTime: ${formattedDateTime}`
       ).catch(console.error);
     }

@@ -6,7 +6,7 @@
 const cron = require('node-cron');
 const { users, leads, bookings, updateUser, updateLead, getUserById } = require('./db');
 const { sendEmail } = require('./email');
-const { sendWhatsApp, templates } = require('./whatsapp');
+const { sendMetaWhatsApp, templates } = require('./whatsapp');
 
 // ---- FOLLOW-UP SEQUENCE — Every hour ----
 cron.schedule('0 * * * *', async () => {
@@ -50,7 +50,7 @@ cron.schedule('0 * * * *', async () => {
 
     const hoursOld   = (now - new Date(lead.created_at)) / (1000 * 60 * 60);
     const channel = (user.gmail_connected && user.whatsapp_connected) ? 'both' : user.whatsapp_connected ? 'whatsapp' : 'email';
-    const bookingUrl = `${process.env.FRONTEND_URL || 'https://theagentflow.co'}/pages/book.html?agent=${lead.userId}`;
+    const bookingUrl = `${process.env.FRONTEND_URL || 'https://getagentflow.co'}/pages/book.html?agent=${lead.userId}`;
 
     try {
       if (hoursOld >= 24 && hoursOld < 25 && lead.followup_stage < 1) {
@@ -83,7 +83,7 @@ async function sendFollowup(lead, user, channel, stage, bookingUrl) {
       if (stage === 1) msg = templates.day1(user.name);
       if (stage === 2) msg = templates.day3(user.name, bookingUrl);
       if (stage === 3) msg = templates.day7(user.name);
-      promises.push(sendWhatsApp(lead.phone, msg).catch(console.error));
+      promises.push(sendMetaWhatsApp(user, lead.phone, msg).catch(console.error));
     }
   }
 
@@ -258,7 +258,7 @@ cron.schedule('30 * * * *', async () => {
   const in1h  = new Date(now.getTime() + 60 * 60 * 1000);
   const { bookings, supabase } = require('./db');
   const { sendEmail } = require('./email');
-  const { sendWhatsApp } = require('./whatsapp');
+  const { sendMetaWhatsApp } = require('./whatsapp');
 
   // FIX: load confirmed bookings from Supabase
   let allBookings = [];
@@ -297,7 +297,7 @@ cron.schedule('30 * * * *', async () => {
         }).catch(console.error);
       }
       if (booking.client_phone) {
-        await sendWhatsApp(booking.client_phone,
+        await sendMetaWhatsApp(agent, booking.client_phone,
           `⏰ Viewing reminder!
 
 Hi ${booking.client_name}, your property viewing is tomorrow:
@@ -329,7 +329,7 @@ See you then! 🏡`
         }).catch(console.error);
       }
       if (agent?.whatsapp_number) {
-        await sendWhatsApp(agent.whatsapp_number,
+        await sendMetaWhatsApp(agent, agent.whatsapp_number,
           `⏰ Viewing in 1 hour!
 
 Client: ${booking.client_name}

@@ -62,7 +62,7 @@ app.use('/api/user',     ...gated, require('./routes/user'));
 // authMiddleware applied individually inside bookings.js.
 app.use('/api/bookings', require('./routes/bookings'));
 
-// WhatsApp webhook is PUBLIC — Twilio calls it with no auth token
+// MetaWhatsApp webhook 
 app.use('/api/whatsapp', require('./routes/whatsapp'));
 app.use('/api/profile',  require('./routes/profile'));
 // Calendar: /slots/:userId is PUBLIC (called by book.html), rest is gated inside the router
