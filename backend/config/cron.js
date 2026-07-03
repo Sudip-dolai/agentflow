@@ -236,8 +236,8 @@ function weeklyReportHtml(name, stats) {
         <div style="color:#c9a84c;font-size:0.8rem;margin-top:4px;">Saved</div>
       </div>
     </div>
-    <a href="${process.env.FRONTEND_URL || 'https://theagentflow.co'}/pages/dashboard.html" style="background:#c9a84c;color:#000;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;display:inline-block;">View Dashboard →</a>
-    <p style="color:#8892a4;font-size:0.78rem;margin-top:32px;">AgentFlow · theagentflow.co</p>
+    <a href="${process.env.FRONTEND_URL || 'https://getagentflow.co'}/pages/dashboard.html" style="background:#c9a84c;color:#000;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;display:inline-block;">View Dashboard →</a>
+    <p style="color:#8892a4;font-size:0.78rem;margin-top:32px;">AgentFlow · getagentflow.co</p>
   </div></body></html>`;
 }
 
@@ -246,7 +246,7 @@ function trialEndingHtml(name) {
     <h2 style="color:#c9a84c;">Hi ${name},</h2>
     <p>Your AgentFlow 14-day free trial ends tomorrow.</p>
     <p>Don't lose access to your listing generator, lead follow-ups, chatbot, and weekly reports.</p>
-    <a href="${process.env.FRONTEND_URL || 'https://theagentflow.co'}/pages/dashboard.html" style="background:#c9a84c;color:#000;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;display:inline-block;margin-top:16px;">Upgrade Now — $49/mo</a>
+    <a href="${process.env.FRONTEND_URL || 'https://getagentflow.co'}/pages/dashboard.html" style="background:#c9a84c;color:#000;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;display:inline-block;margin-top:16px;">Upgrade Now — $49/mo</a>
   </div>`;
 }
 
@@ -380,7 +380,7 @@ function planExpiredHtml(name) {
     <h2 style="color:#c9a84c;">Hi ${name},</h2>
     <p>Your AgentFlow subscription has ended.</p>
     <p>Renew now to restore access to your listing generator, lead follow-ups, chatbot, and weekly reports.</p>
-    <a href="${process.env.FRONTEND_URL || 'https://theagentflow.co'}/pages/dashboard.html#upgrade" style="background:#c9a84c;color:#000;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;display:inline-block;margin-top:16px;">Renew Now — $49/mo</a>
+    <a href="${process.env.FRONTEND_URL || 'https://getagentflow.co'}/pages/dashboard.html#upgrade" style="background:#c9a84c;color:#000;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;display:inline-block;margin-top:16px;">Renew Now — $49/mo</a>
   </div>`;
 }
 

@@ -68,7 +68,7 @@ router.get('/link/:userId', async (req, res) => {
   res.json({
     agent_name: user.name,
     agency: user.agency,
-    booking_url: `${process.env.FRONTEND_URL || 'https://theagentflow.co'}/pages/book.html?agent=${req.params.userId}`
+    booking_url: `${process.env.FRONTEND_URL || 'https://getagentflow.co'}/pages/book.html?agent=${req.params.userId}`
   });
 });
 

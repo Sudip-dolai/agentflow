@@ -29,7 +29,7 @@ const templates = {
     `Hi! Just a quick check-in — are you still looking for a property? 🏠\n\nI'm here to help whenever you're ready. Just reply to this message and we can pick up where we left off.\n\n— ${agentName}`,
 
   trialEnding: (agentName) =>
-    `Hi ${agentName}! ⚡ Your AgentFlow free trial ends tomorrow.\n\nDon't lose access to your listing generator, lead follow-ups, and weekly reports.\n\nUpgrade now: https://theagentflow.co/pages/dashboard.html`
+    `Hi ${agentName}! ⚡ Your AgentFlow free trial ends tomorrow.\n\nDon't lose access to your listing generator, lead follow-ups, and weekly reports.\n\nUpgrade now: https://getagentflow.co/pages/dashboard.html`
 };
 
 module.exports = { sendMetaWhatsApp, templates };

@@ -59,7 +59,7 @@ if ((channel === 'email' || channel === 'both' || (!lead.phone && channel !== 'w
     ${lead.notes ? `<p><strong>Message:</strong> <span style="color:#8892a4;">${String(lead.notes).substring(0,300)}</span></p>` : ''}
   </div>
   <p style="color:#8892a4;font-size:0.85rem;">✅ Instant follow-up sent. Day 1, 3 and 7 sequences will run automatically.</p>
-  <a href="${process.env.FRONTEND_URL || 'https://theagentflow.co'}/pages/dashboard.html"
+  <a href="${process.env.FRONTEND_URL || 'https://getagentflow.co'}/pages/dashboard.html"
      style="background:#c9a84c;color:#000;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;display:inline-block;margin-top:16px;">
     View in Dashboard →
   </a>

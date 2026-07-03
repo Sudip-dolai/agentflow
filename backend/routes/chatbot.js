@@ -15,7 +15,7 @@ router.post('/config', authMiddleware, async (req, res) => {
 
   await updateUser(req.userId, { chatbot: { bot_name, welcome_message, faqs, lead_capture_message } });
 
-  const embedCode = `<script src="${process.env.FRONTEND_URL || 'https://theagentflow.co'}/js/chatbot-widget.js" data-agent="${req.userId}" data-bot="${(bot_name || 'Alex').toLowerCase().replace(/\s/g, '-')}"><\/script>`;
+  const embedCode = `<script src="${process.env.FRONTEND_URL || 'https://getagentflow.co'}/js/chatbot-widget.js" data-agent="${req.userId}" data-bot="${(bot_name || 'Alex').toLowerCase().replace(/\s/g, '-')}"><\/script>`;
 
   res.json({ message: 'Chatbot configured', embed_code: embedCode });
 });
