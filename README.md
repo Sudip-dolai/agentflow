@@ -1,237 +1,109 @@
-# AgentFlow v2.0 — Full Stack SaaS
-AI automation platform for UAE & UK real estate agents.
+# AgentFlow — Full Stack SaaS
 
-> **v2.0:** Dodo Payments ($49/mo). 14-day free trial. 30-day active plan cycle. WhatsApp incoming webhook — auto-creates leads. Gmail API auto-parsing — Rightmove/Zoopla emails auto-create leads.
+AI automation platform for UAE & UK real estate agents: generate portal-ready listings, capture leads, follow up automatically on email and WhatsApp, take viewing bookings, and track performance.
+
+**Live:** https://getagentflow.co
+
+## Features
+- **AI listing generator** — Bayut, Property Finder (English + Arabic), Rightmove, Zoopla (British English). OpenAI `gpt-4o-mini`, with a portal-specific prompt and character limit.
+- **Lead capture** — manual entry, website chatbot widget, WhatsApp incoming messages, and Gmail auto-parsing of Rightmove/Zoopla enquiry emails.
+- **Automated follow-ups** — instant message on a new lead, then hourly cron stages at 24h, 72h and 7 days over email, WhatsApp or both.
+- **Booking page** — public page with slots built from your availability and Google Calendar.
+- **Reports** — weekly stats and emailed report.
+- **Subscriptions** — 14-day free trial, then $49/month through Dodo Payments.
+
+## Tech Stack
+| Layer | Technology |
+|---|---|
+| Frontend | Vanilla HTML / CSS / JavaScript (served by Express) |
+| Backend | Node.js (>= 22) + Express |
+| Database | Supabase PostgreSQL (in-memory fallback for local development only) |
+| AI | OpenAI GPT-4o-mini |
+| Payments | Dodo Payments |
+| Email | Resend (or Nodemailer SMTP), agent's Gmail via OAuth |
+| WhatsApp | Meta WhatsApp Cloud API (embedded signup + webhook) |
+| Calendar / Gmail | Google Calendar API, Gmail API (OAuth 2.0) |
+| Auth & security | JWT + bcryptjs, helmet, CORS, express-rate-limit (100 requests / 15 min) |
+| Scheduling | node-cron |
 
 ## Project Structure
 ```
 agentflow/
-├── frontend/          ← HTML/CSS/JS (served by Express)
-│   ├── index.html     ← Landing page
-│   ├── css/style.css  ← All styles
-│   ├── js/
-│   │   ├── api.js     ← Frontend API client
-│   │   └── main.js    ← UI utilities
-│   └── pages/
-│       ├── login.html
-│       ├── signup.html
-│       └── dashboard.html
-└── backend/           ← Node.js + Express API
-    ├── server.js      ← Main entry point
-    ├── .env.example   ← Copy to .env and fill in keys
+├── frontend/              ← HTML/CSS/JS
+│   ├── index.html         ← Landing page
+│   ├── css/style.css
+│   ├── js/                ← api.js (API client), main.js (UI utilities)
+│   └── pages/             ← login, signup, dashboard, book ...
+└── backend/               ← Node.js + Express API
+    ├── server.js          ← Entry point
+    ├── .env.example       ← Copy to .env
     ├── config/
-    │   ├── db.js      ← Supabase + in-memory fallback
-    │   ├── email.js   ← Nodemailer email config
-    │   ├── google.js  ← Google Calendar + Gmail OAuth
-    │   ├── whatsapp.js← Twilio WhatsApp
-    │   └── cron.js    ← Scheduled jobs
+    │   ├── db.js          ← Supabase + in-memory fallback
+    │   ├── email.js       ← Email sending
+    │   ├── google.js      ← Google Calendar + Gmail OAuth
+    │   ├── whatsapp.js    ← Meta WhatsApp Cloud API sender + templates
+    │   └── cron.js        ← Hourly follow-up jobs
     ├── middleware/
-    │   └── auth.js    ← JWT auth + plan gate
+    │   └── auth.js        ← JWT auth + plan gate (HTTP 402 when expired)
     └── routes/
-        ├── auth.js      ← POST /signup, /login, GET /me
-        ├── listings.js  ← POST /generate, GET /
-        ├── leads.js     ← CRUD leads + auto follow-up
-        ├── chatbot.js   ← Chatbot config + embed
-        ├── bookings.js  ← Booking management
-        ├── calendar.js  ← Google Calendar OAuth + slots
-        ├── gmail.js     ← Gmail auto-parse leads
-        ├── reports.js   ← Weekly stats + email report
-        ├── payments.js  ← Dodo Payments checkout + webhook
-        ├── profile.js   ← Public agent profile
-        └── user.js      ← Profile + settings + stats
+        ├── auth.js  listings.js  leads.js  chatbot.js  bookings.js
+        ├── calendar.js  gmail.js  whatsapp.js  reports.js
+        └── payments.js  profile.js  user.js
 ```
 
-## Quick Start (5 minutes)
-
-### 1. Install dependencies
+## Quick Start
 ```bash
 cd backend
 npm install
+cp .env.example .env     # then fill in your keys
+npm run dev              # development (auto-reload)
+npm start                # production
 ```
+Open http://localhost:5000
 
-### 2. Set up environment
-```bash
-cp .env.example .env
-# Edit .env and add your keys
-```
+## Environment Variables
+Never commit `.env`. Only `.env.example` (with empty values) belongs in Git.
 
-### 3. Start the server
-```bash
-npm run dev    # development (with auto-reload)
-npm start      # production
-```
+**Required**
+| Variable | Purpose |
+|---|---|
+| `JWT_SECRET` | Long random string (32+ chars). **Required in production.** |
+| `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` | Database (without them the app uses an in-memory store and loses data on restart) |
+| `OPENAI_API_KEY` | Listing generation (without it, demo text is returned) |
+| `DODO_API_KEY`, `DODO_PRODUCT_ID` | Subscription checkout |
+| `FRONTEND_URL` | Public base URL (used in links and redirects) |
 
-### 4. Open in browser
-```
-http://localhost:5000
-```
+**Optional**
+| Variable | Purpose |
+|---|---|
+| `RESEND_API_KEY`, `EMAIL_FROM` | Transactional email |
+| `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USER`, `EMAIL_PASS` | SMTP alternative (Gmail App Password) |
+| `META_APP_ID`, `META_APP_SECRET`, `META_WEBHOOK_VERIFY_TOKEN` | WhatsApp Cloud API |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`, `GOOGLE_REDIRECT_URI_GMAIL` | Calendar + Gmail OAuth |
+| `PORT`, `NODE_ENV` | Server settings |
 
----
-
-## API Keys You Need
-
-### Required to go live:
-| Key | Where to get | Cost |
-|-----|-------------|------|
-| `OPENAI_API_KEY` | platform.openai.com/api-keys | ~$0.01/listing |
-| `DODO_API_KEY` | dodopayments.com | Free to set up |
-| `SUPABASE_URL` + `SUPABASE_SERVICE_KEY` | supabase.com | Free tier |
-
-### Optional but recommended:
-| Key | Where to get | Cost |
-|-----|-------------|------|
-| `EMAIL_USER` + `EMAIL_PASS` | Gmail App Password | Free |
-| `TWILIO_ACCOUNT_SID` + `TWILIO_AUTH_TOKEN` | console.twilio.com | Pay per message |
-| `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` | console.cloud.google.com | Free |
-
----
-
-## Adding Keys (Step by Step)
-
-### OpenAI (AI Listing Generator)
-1. Go to https://platform.openai.com/api-keys
-2. Click "Create new secret key"
-3. Copy the key (starts with `sk-`)
-4. Add to `.env`: `OPENAI_API_KEY=sk-proj-...`
+## Setup Guides
 
 ### Dodo Payments
-1. Go to https://dodopayments.com
-2. Sign up and get your API Key from the dashboard
-3. Add to `.env`: `DODO_API_KEY=your_key`
-4. In Dodo dashboard → Webhooks → Add endpoint:
-   `https://yourdomain.com/api/payments/webhook`
-5. Events to subscribe: `payment.succeeded`, `subscription.activated`, `subscription.created`, `subscription.cancelled`, `payment.failed`
+1. Create an account at https://dodopayments.com and a monthly product; copy its ID to `DODO_PRODUCT_ID`.
+2. Put your API key in `DODO_API_KEY`.
+3. Dashboard → Webhooks → add `https://yourdomain.com/api/payments/webhook`.
+4. Subscribe to: `payment.succeeded`, `subscription.activated`, `subscription.created`, `subscription.cancelled`, `payment.failed`.
 
-### Gmail Email (for sending follow-ups)
-1. Go to Google Account → Security → 2-Step Verification → App Passwords
-2. Create app password for "Mail"
-3. Use that 16-char password in `.env`
+### WhatsApp (Meta Cloud API)
+1. Create an app at https://developers.facebook.com and add the WhatsApp product.
+2. Put `META_APP_ID`, `META_APP_SECRET` and a self-chosen `META_WEBHOOK_VERIFY_TOKEN` in `.env`.
+3. In the Meta app, set the webhook callback URL to `https://yourdomain.com/api/whatsapp/webhook` and the same verify token; subscribe to the `messages` field.
+4. Each agent connects their own WhatsApp Business number from the dashboard (embedded signup). Incoming messages create leads automatically.
 
-### Supabase (Production Database)
-1. Go to https://supabase.com → New project
-2. Go to Settings → API
-3. Copy Project URL and service_role key
-4. Go to SQL Editor and run the schema from `backend/config/db.js` (at bottom of file in comments)
-
----
-
-## Deploying to Production
-
-### Railway (Recommended — easiest for Node.js)
-1. Go to railway.app
-2. New Project → Deploy from GitHub
-3. Set root directory to `backend`
-4. Add all environment variables from `.env` in Railway Settings
-5. Railway gives you a free domain, or add your own
-
-### VPS (DigitalOcean / Hetzner / any Linux server)
-```bash
-# On your server:
-git clone your-repo
-cd agentflow/backend
-npm install
-cp .env.example .env
-nano .env  # add your keys
-
-# Run with PM2 (keeps it alive after logout)
-npm install -g pm2
-pm2 start server.js --name agentflow
-pm2 startup
-pm2 save
-```
-
-### Vercel (Not recommended — Vercel is for serverless, cron jobs won't work)
-
----
-
-## API Endpoints Reference
-
-### Auth
-- `POST /api/auth/signup` — Create account
-- `POST /api/auth/login` — Login
-- `GET /api/auth/me` — Get current user (requires token)
-
-### Listings
-- `POST /api/listings/generate` — Generate AI listing
-- `GET /api/listings` — Get listing history
-
-### Leads
-- `POST /api/leads` — Add lead (triggers follow-up)
-- `GET /api/leads` — Get all leads
-- `POST /api/leads/capture` — Public: chatbot lead capture
-
-### Reports
-- `GET /api/reports/weekly` — Weekly stats
-- `POST /api/reports/send` — Send report to email
-
-### Payments (Dodo Payments)
-- `POST /api/payments/create-checkout` — Create Dodo checkout session
-- `POST /api/payments/webhook` — Dodo webhook (public — Dodo calls this)
-- `GET /api/payments/status` — Subscription status
-
-### User
-- `PUT /api/user/profile` — Update profile
-- `PUT /api/user/apikey` — Save OpenAI key
-- `GET /api/user/stats` — Dashboard stats
-
-### Calendar
-- `GET /api/calendar/connect` — Start Google Calendar OAuth
-- `GET /api/calendar/slots/:userId` — Public: available slots
-
-### WhatsApp
-- `POST /api/whatsapp/webhook` — Twilio inbound webhook
-
----
-
-## Tech Stack
-- **Frontend:** Vanilla HTML/CSS/JS (no framework needed)
-- **Backend:** Node.js + Express
-- **Database:** Supabase PostgreSQL (in-memory fallback for dev)
-- **AI:** OpenAI GPT-4o-mini
-- **Payments:** Dodo Payments ($49/month)
-- **Email:** Nodemailer + Gmail SMTP
-- **WhatsApp:** Twilio
-- **Calendar:** Google Calendar API
-- **Hosting:** Railway / Any Node.js host
-
----
-
-## WhatsApp Setup (Twilio)
-
-### Step 1 — Sign up for Twilio
-1. Go to https://console.twilio.com
-2. Sign up free
-3. Go to **Messaging → Try it out → Send a WhatsApp message**
-4. Follow the sandbox setup — scan QR code with your phone
-
-### Step 2 — Get your keys
-1. From Twilio Console dashboard copy:
-   - **Account SID** → `TWILIO_ACCOUNT_SID`
-   - **Auth Token** → `TWILIO_AUTH_TOKEN`
-2. Sandbox number: `+14155238886` → `TWILIO_WHATSAPP_FROM=whatsapp:+14155238886`
-
-### Step 3 — Set webhook URL in Twilio
-Go to Twilio Console → Messaging → Settings → WhatsApp Sandbox Settings
-Set **"When a message comes in"** to: `https://yourdomain.com/api/whatsapp/webhook`
-
----
-
-## Google Calendar + Gmail Setup
-
-### Step 1 — Google Cloud Console
-1. Go to https://console.cloud.google.com
-2. New Project → name it `AgentFlow`
-3. APIs & Services → Library → Enable **Google Calendar API** and **Gmail API**
-4. APIs & Services → Credentials → Create OAuth 2.0 Client ID
-   - Type: Web Application
-   - Authorized redirect URIs — add all of these:
-     - `http://localhost:5000/api/calendar/callback`
-     - `http://localhost:5000/api/gmail/callback`
-     - `https://yourdomain.com/api/calendar/callback`
-     - `https://yourdomain.com/api/gmail/callback`
-5. Copy Client ID and Client Secret
-
-### Step 2 — Add to .env
+### Google Calendar + Gmail
+1. https://console.cloud.google.com → new project → enable **Google Calendar API** and **Gmail API**.
+2. Credentials → OAuth 2.0 Client ID (Web application). Authorized redirect URIs:
+   - `http://localhost:5000/api/calendar/callback`
+   - `http://localhost:5000/api/gmail/callback`
+   - `https://yourdomain.com/api/calendar/callback`
+   - `https://yourdomain.com/api/gmail/callback`
+3. Add to `.env`:
 ```env
 GOOGLE_CLIENT_ID=your_client_id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your_client_secret
@@ -239,23 +111,48 @@ GOOGLE_REDIRECT_URI=https://yourdomain.com/api/calendar/callback
 GOOGLE_REDIRECT_URI_GMAIL=https://yourdomain.com/api/gmail/callback
 ```
 
----
+### Supabase
+Create a project → Settings → API → copy the Project URL and `service_role` key → SQL Editor → run the schema below.
+
+## Deployment
+The server must run continuously because follow-ups use node-cron, so serverless hosts such as Vercel are not suitable.
+
+**Any Node.js host (Railway, Google Cloud, etc.)**
+1. Connect the GitHub repo and set the root directory to `backend`.
+2. Add every variable from `.env` in the host's environment settings.
+3. Start command: `npm start`.
+
+**VPS with PM2**
+```bash
+git clone <your-repo> && cd agentflow/backend
+npm install
+cp .env.example .env && nano .env
+npm install -g pm2
+pm2 start server.js --name agentflow
+pm2 startup && pm2 save
+```
 
 ## Trial & Subscription Flow
+- New agents get a 14-day free trial.
+- After the trial, gated features return HTTP 402 and the dashboard shows an upgrade prompt.
+- Upgrade opens a Dodo checkout ($49/month). After payment, Dodo calls the webhook and the plan becomes `active` for a 30-day period.
+- When the period ends without renewal, the plan becomes `expired` and features lock again.
+- Cancelled or failed payments set the plan to `cancelled`.
 
-- New agents get **14 days free trial**
-- After trial expires → all features locked, upgrade prompt shown
-- Agent clicks Upgrade → redirected to Dodo checkout ($49/month)
-- After payment → Dodo fires webhook → plan set to `active` (30-day period)
-- After 30 days → features locked again, renewal prompt shown
-- Dodo handles recurring billing automatically
-
----
+## API Reference
+**Auth** — `POST /api/auth/signup`, `POST /api/auth/login`, `GET /api/auth/me`
+**Listings** — `POST /api/listings/generate`, `GET /api/listings`
+**Leads** — `POST /api/leads`, `GET /api/leads`, `POST /api/leads/capture` (public, chatbot)
+**Chatbot** — `POST|GET /api/chatbot/config`, `GET /api/chatbot/widget/:agentId` (public)
+**Bookings** — `GET /api/bookings/slots/:userId?date=YYYY-MM-DD` (public), `POST /api/bookings/book` (public), `GET|PUT /api/bookings/availability`
+**Calendar** — `GET /api/calendar/connect`, `GET /api/calendar/slots/:userId`
+**Gmail** — `GET /api/gmail/connect`, `POST /api/gmail/sync`
+**WhatsApp** — `GET|POST /api/whatsapp/webhook` (Meta), `GET /api/whatsapp/meta/status`
+**Reports** — `GET /api/reports/weekly`, `POST /api/reports/send`
+**Payments** — `POST /api/payments/create-checkout`, `POST /api/payments/webhook` (public), `GET /api/payments/status`
+**User** — `PUT /api/user/profile`, `GET /api/user/stats`
 
 ## Supabase Schema
-
-Run this SQL in your Supabase project → SQL Editor:
-
 ```sql
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY,
@@ -273,6 +170,12 @@ CREATE TABLE IF NOT EXISTS users (
   photo_url TEXT DEFAULT '',
   openai_key TEXT DEFAULT '',
   dodo_subscription_id TEXT DEFAULT '',
+  dodo_customer_id TEXT DEFAULT '',
+  meta_connected BOOLEAN DEFAULT FALSE,
+  meta_phone_number_id TEXT,
+  meta_waba_id TEXT,
+  meta_access_token TEXT,
+  meta_connected_at TIMESTAMPTZ,
   gmail_connected BOOLEAN DEFAULT FALSE,
   gmail_tokens JSONB,
   calendar_connected BOOLEAN DEFAULT FALSE,
